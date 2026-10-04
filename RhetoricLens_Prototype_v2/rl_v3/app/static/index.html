@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>RhetoricLens — Live Rhetoric Monitor</title>
+  <link rel="stylesheet" href="/static/style.css" />
+</head>
+<body>
+  <main class="shell">
+    <header class="topbar">
+      <div>
+        <div class="eyebrow">HACKCOSMIC · AI FOR REAL-WORLD IMPACT</div>
+        <h1>Rhetoric<span>Lens</span></h1>
+        <p>Hear the words. See the structure.</p>
+      </div>
+      <div class="status"><span id="statusDot"></span><span id="statusText">Connecting…</span></div>
+    </header>
+
+    <section class="grid">
+      <aside class="left">
+        <div class="panel score-panel">
+          <div class="panel-title">RIGOR SCORE</div>
+          <div class="score-row"><div id="score">100</div><span>/100</span></div>
+          <div class="meter"><div id="meterFill"></div></div>
+          <div class="speaker-row">
+            <label>Speaker</label>
+            <select id="speakerSelect">
+              <option>Speaker A</option>
+              <option>Speaker B</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="panel controls">
+          <div class="panel-title">LIVE INPUT</div>
+          <textarea id="inputText" placeholder="Type a finished sentence, or use the demo buttons…"></textarea>
+          <div class="button-row">
+            <button id="sendBtn" class="primary">Analyze</button>
+            <button id="resetBtn">Reset</button>
+          </div>
+          <div class="mic-actions">
+            <button id="micBtn" class="mic-button">● Start microphone</button>
+            <button id="browserSpeechBtn" class="secondary-button">Use browser speech fallback</button>
+          </div>
+          <div class="mic-message" id="micMessage">Ready for live audio</div>
+          <div class="hint">Deepgram mode sends browser PCM16 audio to the FastAPI bridge. Browser Speech is a no-key fallback for demos.</div>
+        </div>
+
+        <div class="panel demo-panel">
+          <div class="panel-title">DEMO SCENARIOS</div>
+          <button data-demo="clean">Clean argument</button>
+          <button data-demo="ad_hominem">Ad Hominem</button>
+          <button data-demo="false_dilemma">False Dilemma</button>
+          <button data-demo="straw_man">Straw Man</button>
+          <button data-demo="mixed">90-second pitch sequence</button>
+        </div>
+      </aside>
+
+      <section class="main-panel">
+        <div class="live-header">
+          <div>
+            <div class="panel-title">LIVE R H E T O R I C  M O N I T O R</div>
+            <div class="subtle">Fixed taxonomy · precision-first · exact-quote validation</div>
+          </div>
+          <div class="live-chip">WS LIVE</div>
+        </div>
+
+        <div class="live-transcript-panel">
+          <div class="panel-title">LIVE SPEECH</div>
+          <div id="liveTranscript" class="live-transcript">Waiting for speech…</div>
+        </div>
+
+        <div id="alert" class="alert hidden">
+          <div class="alert-top"><span id="alertType"></span><span id="alertPenalty"></span></div>
+          <div id="alertQuote" class="quote"></div>
+          <div id="alertExplanation" class="explanation"></div>
+        </div>
+
+        <div class="transcript panel-inner">
+          <div class="panel-title">TRANSCRIPT FEED</div>
+          <div id="feed" class="feed"></div>
+        </div>
+
+        <div class="timeline panel-inner">
+          <div class="panel-title">FLAG TIMELINE</div>
+          <div id="timeline" class="timeline-track"></div>
+        </div>
+      </section>
+    </section>
+  </main>
+  <script src="/static/app.js"></script>
+</body>
+</html>
