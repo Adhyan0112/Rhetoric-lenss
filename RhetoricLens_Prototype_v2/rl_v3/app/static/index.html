@@ -1,94 +1,93 @@
-<!doctype html>
+﻿<!doctype html>
 <html lang="en">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>RhetoricLens — Live Rhetoric Monitor</title>
+  <meta name="theme-color" content="#f2f4f7" />
+  <title>RhetoricLens: live argument checker</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='15' cy='15' r='10' fill='none' stroke='%23162033' stroke-width='4'/%3E%3Crect x='9' y='16' width='12' height='4' fill='%23ffd23f'/%3E%3C/svg%3E" />
   <link rel="stylesheet" href="/static/style.css" />
 </head>
 <body>
-  <main class="shell">
-    <header class="topbar">
+<main class="shell">
+  <header class="top">
+    <div class="brand">
+      <svg class="logo" viewBox="0 0 40 40" aria-hidden="true"><rect x="10" y="20" width="16" height="5" rx="1" fill="#ffe27a"/><circle cx="18" cy="18" r="12" fill="none" stroke="currentColor" stroke-width="3.5"/><path d="M27 27l9 9" stroke="currentColor" stroke-width="3.5" stroke-linecap="round"/></svg>
       <div>
-        <div class="eyebrow">HACKCOSMIC · AI FOR REAL-WORLD IMPACT</div>
-        <h1>Rhetoric<span>Lens</span></h1>
+        <h1>RhetoricLens</h1>
         <p>Hear the words. See the structure.</p>
       </div>
-      <div class="status"><span id="statusDot"></span><span id="statusText">Connecting…</span></div>
-    </header>
+    </div>
+    <div class="badges">
+      <span id="modeBadge" class="badge">Checking mode…</span>
+      <span class="status"><span id="statusDot"></span><span id="statusText">Connecting…</span></span>
+    </div>
+  </header>
 
-    <section class="grid">
-      <aside class="left">
-        <div class="panel score-panel">
-          <div class="panel-title">RIGOR SCORE</div>
-          <div class="score-row"><div id="score">100</div><span>/100</span></div>
-          <div class="meter"><div id="meterFill"></div></div>
-          <div class="speaker-row">
-            <label>Speaker</label>
-            <select id="speakerSelect">
-              <option>Speaker A</option>
-              <option>Speaker B</option>
-            </select>
-          </div>
-        </div>
+  <div class="layout">
+    <div class="main">
+      <section class="scores" aria-label="Rigor scores">
+        <button class="score-card active" id="card-A" type="button">
+          <span class="ring" id="ring-A" data-level="good" style="--p:100"><svg viewBox="0 0 100 100" aria-hidden="true"><circle class="bg" cx="50" cy="50" r="42"/><circle class="fg" cx="50" cy="50" r="42"/></svg><b id="score-A">100</b></span>
+          <span class="who"><strong>Speaker A</strong><small>Rigor score</small></span>
+        </button>
+        <button class="score-card" id="card-B" type="button">
+          <span class="ring" id="ring-B" data-level="good" style="--p:100"><svg viewBox="0 0 100 100" aria-hidden="true"><circle class="bg" cx="50" cy="50" r="42"/><circle class="fg" cx="50" cy="50" r="42"/></svg><b id="score-B">100</b></span>
+          <span class="who"><strong>Speaker B</strong><small>Rigor score</small></span>
+        </button>
+      </section>
 
-        <div class="panel controls">
-          <div class="panel-title">LIVE INPUT</div>
-          <textarea id="inputText" placeholder="Type a finished sentence, or use the demo buttons…"></textarea>
-          <div class="button-row">
-            <button id="sendBtn" class="primary">Analyze</button>
-            <button id="resetBtn">Reset</button>
-          </div>
-          <div class="mic-actions">
-            <button id="micBtn" class="mic-button">● Start microphone</button>
-            <button id="browserSpeechBtn" class="secondary-button">Use browser speech fallback</button>
-          </div>
-          <div class="mic-message" id="micMessage">Ready for live audio</div>
-          <div class="hint">Deepgram mode sends browser PCM16 audio to the FastAPI bridge. Browser Speech is a no-key fallback for demos.</div>
-        </div>
+      <section class="page">
+        <h2>Live speech</h2>
+        <p id="liveTranscript" class="live">Waiting for speech…</p>
 
-        <div class="panel demo-panel">
-          <div class="panel-title">DEMO SCENARIOS</div>
-          <button data-demo="clean">Clean argument</button>
-          <button data-demo="ad_hominem">Ad Hominem</button>
-          <button data-demo="false_dilemma">False Dilemma</button>
-          <button data-demo="straw_man">Straw Man</button>
-          <button data-demo="mixed">90-second pitch sequence</button>
-        </div>
-      </aside>
-
-      <section class="main-panel">
-        <div class="live-header">
-          <div>
-            <div class="panel-title">LIVE R H E T O R I C  M O N I T O R</div>
-            <div class="subtle">Fixed taxonomy · precision-first · exact-quote validation</div>
-          </div>
-          <div class="live-chip">WS LIVE</div>
-        </div>
-
-        <div class="live-transcript-panel">
-          <div class="panel-title">LIVE SPEECH</div>
-          <div id="liveTranscript" class="live-transcript">Waiting for speech…</div>
-        </div>
-
-        <div id="alert" class="alert hidden">
+        <div id="alert" class="alert hidden" role="status">
           <div class="alert-top"><span id="alertType"></span><span id="alertPenalty"></span></div>
-          <div id="alertQuote" class="quote"></div>
-          <div id="alertExplanation" class="explanation"></div>
+          <div id="alertQuote"></div>
+          <p id="alertExplanation"></p>
         </div>
 
-        <div class="transcript panel-inner">
-          <div class="panel-title">TRANSCRIPT FEED</div>
-          <div id="feed" class="feed"></div>
-        </div>
+        <h2>Transcript</h2>
+        <div id="feed" class="feed"></div>
 
-        <div class="timeline panel-inner">
-          <div class="panel-title">FLAG TIMELINE</div>
-          <div id="timeline" class="timeline-track"></div>
+        <h2>Flags</h2>
+        <div id="timeline" class="timeline-track"></div>
+      </section>
+    </div>
+
+    <aside class="rail">
+      <section>
+        <h2>Try a scenario</h2>
+        <div class="demos">
+          <button class="primary" data-demo="mixed" type="button">Play the 90-second pitch</button>
+          <button data-demo="clean" type="button">Clean argument</button>
+          <button data-demo="ad_hominem" type="button">Ad hominem</button>
+          <button data-demo="false_dilemma" type="button">False dilemma</button>
+          <button data-demo="straw_man" type="button">Straw man</button>
         </div>
       </section>
-    </section>
-  </main>
-  <script src="/static/app.js"></script>
+      <section>
+        <h2>Or speak live</h2>
+        <button id="micBtn" class="mic-button" type="button">Start microphone</button>
+        <button id="browserSpeechBtn" type="button">Use browser speech</button>
+        <div id="micMessage">Ready for live audio</div>
+      </section>
+      <section>
+        <h2>Or type a sentence</h2>
+        <textarea id="inputText" placeholder="Type a finished sentence, then press Analyze."></textarea>
+        <div class="row">
+          <label for="speakerSelect">Speaking as</label>
+          <select id="speakerSelect"><option>Speaker A</option><option>Speaker B</option></select>
+        </div>
+        <div class="row">
+          <button id="sendBtn" class="primary" type="button">Analyze</button>
+          <button id="resetBtn" type="button">Reset</button>
+        </div>
+      </section>
+    </aside>
+  </div>
+  <footer>Built for HackCosmic. Penalty weights are configurable, not scientifically validated.</footer>
+</main>
+<script src="/static/app.js"></script>
 </body>
 </html>

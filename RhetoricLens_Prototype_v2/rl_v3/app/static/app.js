@@ -34,7 +34,7 @@ function connect() {
 }
 
 function setConnectionStatus(connected, text) {
-  $("statusDot").style.background = connected ? "#14d9ff" : "#ff5c68";
+  $("statusDot").style.background = connected ? "#1b7f56" : "#b4380f";
   $("statusText").textContent = text;
 }
 
@@ -60,16 +60,30 @@ function renderState(snapshot) {
 }
 
 function updateScore() {
-  const speaker = $("speakerSelect").value;
-  const score = state.scores[speaker] ?? 100;
-  $("score").textContent = score;
-  $("meterFill").style.width = `${score}%`;
+  const sel = $("speakerSelect").value;
+  ["A", "B"].forEach((k) => {
+    const name = "Speaker " + k;
+    const sc = state.scores[name] ?? 100;
+    const ring = $("ring-" + k);
+    ring.style.setProperty("--p", sc);
+    ring.dataset.level = sc >= 80 ? "good" : sc >= 60 ? "warn" : "bad";
+    $("score-" + k).textContent = sc;
+    $("card-" + k).classList.toggle("active", name === sel);
+  });
+}
+
+function pulse(el, cls) {
+  el.classList.remove(cls);
+  void el.offsetWidth;
+  el.classList.add(cls);
 }
 
 function handleDetection(e) {
   state.scores[e.speaker] = e.new_score;
   updateScore();
   addEventToFeed(e);
+  const card = document.getElementById("card-" + e.speaker.slice(-1));
+  if (e.accepted && card) pulse(card, "hit");
   if (e.accepted) showAlert(e);
 }
 
@@ -100,29 +114,40 @@ function handleAudioStatus(msg) {
   }
 }
 
+function markQuote(text, quote) {
+  const i = quote ? text.toLowerCase().indexOf(quote.toLowerCase()) : -1;
+  if (i < 0) return escapeHtml(text);
+  const j = i + quote.length;
+  return escapeHtml(text.slice(0, i)) + "<mark>" + escapeHtml(text.slice(i, j)) + "</mark>" + escapeHtml(text.slice(j));
+}
+
 function addEventToFeed(e) {
   const div = document.createElement("div");
-  div.className = "item";
-  const dt = new Date(e.timestamp * 1000);
+  div.className = "item" + (e.accepted ? " flagged" : "");
+  const t = new Date(e.timestamp * 1000).toLocaleTimeString([], {hour: "2-digit", minute: "2-digit", second: "2-digit"});
+  const down = (e.reason || "").startsWith("Classifier unavailable");
   div.innerHTML = `
-    <div class="item-time">${dt.toLocaleTimeString()}<br>${escapeHtml(e.speaker)}</div>
+    <div class="item-meta">${escapeHtml(e.speaker)}<br>${t}</div>
     <div>
-      <div class="item-text">${escapeHtml(e.text)}</div>
-      ${e.accepted ? `<div class="item-flag">⚠ ${escapeHtml(e.fallacy_type)} · −${e.deduction}</div>` : `<div class="item-flag noflag">NO FLAG</div>`}
+      <p class="item-text">${e.accepted ? markQuote(e.text, e.quote) : escapeHtml(e.text)}</p>
+      ${e.accepted
+        ? `<p class="item-note"><b>${escapeHtml(e.fallacy_type)}, −${e.deduction}.</b> ${escapeHtml(e.explanation)}</p>`
+        : `<p class="item-note quiet">${down ? "AI unavailable, skipped" : "No flag"}</p>`}
     </div>`;
   $("feed").prepend(div);
   if (e.accepted) {
     const flag = document.createElement("div");
     flag.className = "flag";
-    flag.innerHTML = `${escapeHtml(e.fallacy_type)} <span>−${e.deduction} · ${e.new_score}</span>`;
+    flag.innerHTML = `${escapeHtml(e.fallacy_type)} <span>−${e.deduction}, score ${e.new_score}</span>`;
     $("timeline").prepend(flag);
   }
 }
 
 function showAlert(e) {
-  $("alert").classList.remove("hidden");
-  $("alertType").textContent = e.fallacy_type.toUpperCase();
-  $("alertPenalty").textContent = `−${e.deduction} · SCORE ${e.new_score}`;
+   $("alert").classList.remove("hidden");
+  pulse($("alert"), "pop");
+  $("alertType").textContent = e.fallacy_type;
+  $("alertPenalty").textContent = `−${e.deduction}, score ${e.new_score}`;
   $("alertQuote").textContent = `“${e.quote}”`;
   $("alertExplanation").textContent = e.explanation;
 }
@@ -315,5 +340,14 @@ $("browserSpeechBtn").onclick = toggleBrowserSpeech;
 $("resetBtn").onclick = reset;
 $("speakerSelect").onchange = updateScore;
 document.querySelectorAll("[data-demo]").forEach(btn => btn.onclick = () => runDemo(btn.dataset.demo));
+
+["A", "B"].forEach((k) => {
+  $("card-" + k).onclick = () => { $("speakerSelect").value = "Speaker " + k; updateScore(); };
+});
+fetch("/api/config").then((r) => r.json()).then((c) => {
+  const live = c.provider === "GroqProvider";
+  $("modeBadge").textContent = live ? "Live AI classifier" : "Scripted demo mode";
+  $("modeBadge").dataset.mode = live ? "live" : "demo";
+}).catch(() => { $("modeBadge").textContent = "Mode unknown"; });
 
 connect();

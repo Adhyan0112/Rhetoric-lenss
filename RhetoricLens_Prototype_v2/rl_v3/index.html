@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>RhetoricLens: live argument checker</title>
+  <link rel="stylesheet" href="/static/style.css" />
+</head>
+<body>
+<main class="shell">
+  <header class="top">
+    <div>
+      <h1>RhetoricLens</h1>
+      <p>Hear the words. See the structure.</p>
+    </div>
+    <div class="badges">
+      <span id="modeBadge" class="badge">Checking mode…</span>
+      <span class="status"><span id="statusDot"></span><span id="statusText">Connecting…</span></span>
+    </div>
+  </header>
+
+  <section class="scores" aria-label="Rigor scores">
+    <button class="score-card active" id="card-A" type="button">
+      <span class="ring" id="ring-A" data-level="good" style="--p:100"><svg viewBox="0 0 100 100" aria-hidden="true"><circle class="bg" cx="50" cy="50" r="42"/><circle class="fg" cx="50" cy="50" r="42"/></svg><b id="score-A">100</b></span>
+      <span class="who"><strong>Speaker A</strong><small>Rigor score</small></span>
+    </button>
+    <button class="score-card" id="card-B" type="button">
+      <span class="ring" id="ring-B" data-level="good" style="--p:100"><svg viewBox="0 0 100 100" aria-hidden="true"><circle class="bg" cx="50" cy="50" r="42"/><circle class="fg" cx="50" cy="50" r="42"/></svg><b id="score-B">100</b></span>
+      <span class="who"><strong>Speaker B</strong><small>Rigor score</small></span>
+    </button>
+  </section>
+
+  <div class="layout">
+    <section class="page">
+      <h2>Live speech</h2>
+      <p id="liveTranscript" class="live">Waiting for speech…</p>
+
+      <div id="alert" class="alert hidden" role="status">
+        <div class="alert-top"><span id="alertType"></span><span id="alertPenalty"></span></div>
+        <div id="alertQuote"></div>
+        <p id="alertExplanation"></p>
+      </div>
+
+      <h2>Transcript</h2>
+      <div id="feed" class="feed"></div>
+
+      <h2>Flags</h2>
+      <div id="timeline" class="timeline-track"></div>
+    </section>
+
+    <aside class="rail">
+      <section>
+        <h2>Say or type something</h2>
+        <textarea id="inputText" placeholder="Type a finished sentence, then press Analyze."></textarea>
+        <div class="row">
+          <label for="speakerSelect">Speaking as</label>
+          <select id="speakerSelect"><option>Speaker A</option><option>Speaker B</option></select>
+        </div>
+        <div class="row">
+          <button id="sendBtn" class="primary" type="button">Analyze</button>
+          <button id="resetBtn" type="button">Reset</button>
+        </div>
+        <div class="row">
+          <button id="micBtn" class="mic-button" type="button">Start microphone</button>
+          <button id="browserSpeechBtn" type="button">Use browser speech</button>
+        </div>
+        <div id="micMessage">Ready for live audio</div>
+      </section>
+      <section>
+        <h2>Demo scenarios</h2>
+        <div class="demos">
+          <button data-demo="clean" type="button">Clean argument</button>
+          <button data-demo="ad_hominem" type="button">Ad hominem</button>
+          <button data-demo="false_dilemma" type="button">False dilemma</button>
+          <button data-demo="straw_man" type="button">Straw man</button>
+          <button data-demo="mixed" type="button">90-second pitch sequence</button>
+        </div>
+      </section>
+    </aside>
+  </div>
+  <footer>Built for HackCosmic. Penalty weights are configurable, not scientifically validated.</footer>
+</main>
+<script src="/static/app.js"></script>
+</body>
+</html>
