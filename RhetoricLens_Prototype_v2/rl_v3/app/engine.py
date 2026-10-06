@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import hashlib
+import logging
 import re
 import time
 from collections import defaultdict, deque
@@ -8,8 +9,10 @@ from dataclasses import dataclass
 from typing import Deque
 
 from .config import settings
-from .models import DetectionEvent, ModelVerdict
+from .models import DetectionEvent, FallacyType, ModelVerdict
 from .providers import Provider
+
+logger = logging.getLogger(__name__)
 
 
 @dataclass
@@ -37,8 +40,11 @@ class RhetoricEngine:
         context = "\n".join(
             f"[{item.speaker}] {item.text}" for item in self.buffer
         )
-        verdict = self.provider.classify(text, context)
-        accepted, reason = self._validate(verdict, text, speaker, ts)
+        verdict, error = self._classify_safely(text, context)
+        if error:
+            accepted, reason = False, f"Classifier unavailable ({error}); skipped"
+        else:
+            accepted, reason = self._validate(verdict, text, speaker, ts)
 
         deduction = 0
         if accepted and verdict.fallacy_detected:
@@ -63,6 +69,24 @@ class RhetoricEngine:
         self.events.append(event)
         self.events = self.events[-100:]
         return event
+
+    def _classify_safely(self, text: str, context: str) -> tuple[ModelVerdict, str]:
+        """Fail open: a provider timeout / bad JSON must never kill the session."""
+        try:
+            return self.provider.classify(text, context), ""
+        except Exception as exc:  # noqa: BLE001 - any provider failure is non-fatal
+            logger.warning("Classifier failed: %s: %s", type(exc).__name__, exc)
+            return (
+                ModelVerdict(
+                    fallacy_detected=False,
+                    fallacy_type=FallacyType.NONE,
+                    quote="",
+                    explanation="Classifier unavailable.",
+                    confidence=0.0,
+                    argument_claim=text[:160],
+                ),
+                type(exc).__name__,
+            )
 
     def snapshot(self) -> dict:
         return {

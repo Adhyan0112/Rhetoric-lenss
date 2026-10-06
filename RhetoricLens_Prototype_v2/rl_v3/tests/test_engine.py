@@ -58,3 +58,24 @@ def test_duplicate_flags_are_suppressed():
     assert second.accepted is False
     assert second.reason == "Duplicate flag suppressed"
     assert second.new_score == 92
+
+
+def test_provider_failure_does_not_crash_and_scores_nothing():
+    class ExplodingProvider(MockProvider):
+        def classify(self, text: str, context: str):
+            raise TimeoutError("simulated Groq timeout")
+
+    engine = RhetoricEngine(ExplodingProvider())
+    event = engine.analyze("Speaker A", "You don't understand economics.", timestamp=100.0)
+    assert event.accepted is False
+    assert event.deduction == 0
+    assert event.new_score == 100
+    assert event.reason.startswith("Classifier unavailable")
+    # The session keeps working afterwards.
+    engine.provider = MockProvider()
+    follow_up = engine.analyze(
+        "Speaker A",
+        "You don't understand economics, so your argument is meaningless.",
+        timestamp=120.0,
+    )
+    assert follow_up.accepted is True

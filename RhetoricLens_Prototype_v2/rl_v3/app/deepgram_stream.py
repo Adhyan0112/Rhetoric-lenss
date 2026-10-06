@@ -90,23 +90,40 @@ class DeepgramStream:
         except Exception as exc:
             await on_message({"type": "stt_error", "message": str(exc)})
 
+    async def _flush_pending(self, on_message) -> None:
+        utterance = " ".join(self.pending_final).strip()
+        self.pending_final.clear()
+        if utterance:
+            await on_message({
+                "type": "finished_utterance",
+                "speaker": self.speaker,
+                "text": utterance,
+            })
+
     async def _handle_message(self, msg: dict, on_message) -> None:
         msg_type = msg.get("type")
-        if msg_type in {"Metadata", "SpeechStarted", "UtteranceEnd"}:
-            if msg_type == "SpeechStarted":
-                await on_message({"type": "speech_started", "speaker": self.speaker})
+        if msg_type == "SpeechStarted":
+            await on_message({"type": "speech_started", "speaker": self.speaker})
             return
-        if "channel" not in msg:
+        if msg_type == "UtteranceEnd":
+            # Fallback end-of-sentence signal: in noisy rooms speech_final may never
+            # arrive, so flush whatever finalized text we are holding.
+            await self._flush_pending(on_message)
             return
-        alternatives = msg.get("channel", {}).get("alternatives", [])
-        if not alternatives:
-            return
-        transcript = (alternatives[0].get("transcript") or "").strip()
-        if not transcript:
+        if msg_type == "Metadata" or "channel" not in msg:
             return
 
         is_final = bool(msg.get("is_final"))
         speech_final = bool(msg.get("speech_final"))
+        alternatives = msg.get("channel", {}).get("alternatives", [])
+        transcript = ((alternatives[0].get("transcript") if alternatives else "") or "").strip()
+
+        if not transcript:
+            # speech_final can arrive on an empty-transcript message; don't drop it.
+            if speech_final:
+                await self._flush_pending(on_message)
+            return
+
         if is_final:
             self.pending_final.append(transcript)
 
@@ -118,12 +135,5 @@ class DeepgramStream:
             "speech_final": speech_final,
         })
 
-        if speech_final and self.pending_final:
-            utterance = " ".join(self.pending_final).strip()
-            self.pending_final.clear()
-            if utterance:
-                await on_message({
-                    "type": "finished_utterance",
-                    "speaker": self.speaker,
-                    "text": utterance,
-                })
+        if speech_final:
+            await self._flush_pending(on_message)
