@@ -1,3 +1,4 @@
+const MIC_SVG = '<svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true"><rect x="8" y="1.5" width="8" height="13" rx="4" fill="currentColor"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3.5M8.5 21.5h7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>';
 const state = {
   scores: {"Speaker A": 100, "Speaker B": 100},
   ws: null,
@@ -97,17 +98,17 @@ function handleTranscript(msg) {
 
 function handleAudioStatus(msg) {
   if (msg.status === "started") {
-    $("micBtn").textContent = "■ Stop microphone";
+    $("micBtn").innerHTML = MIC_SVG + "Stop";
     $("micBtn").classList.add("recording");
     state.mic.active = true;
     setMicMessage(`Live STT: ${msg.provider || "Deepgram"}`);
   } else if (msg.status === "stopped") {
-    $("micBtn").textContent = "● Start microphone";
+    $("micBtn").innerHTML = MIC_SVG + "Mic";
     $("micBtn").classList.remove("recording");
     state.mic.active = false;
     setMicMessage("Microphone stopped");
   } else if (msg.status === "error") {
-    $("micBtn").textContent = "● Start microphone";
+    $("micBtn").innerHTML = MIC_SVG + "Mic";
     $("micBtn").classList.remove("recording");
     state.mic.active = false;
     setMicMessage(msg.message || "Live STT unavailable");
@@ -246,7 +247,7 @@ async function stopMicrophone() {
   state.mic.stream?.getTracks().forEach(t => t.stop());
   if (state.ws?.readyState === WebSocket.OPEN) state.ws.send(JSON.stringify({type:"audio_stop"}));
   state.mic = {active:false, context:null, source:null, processor:null, stream:null, inputRate:48000};
-  $("micBtn").textContent = "● Start microphone";
+  $("micBtn").innerHTML = MIC_SVG + "Mic";
   $("micBtn").classList.remove("recording");
 }
 
