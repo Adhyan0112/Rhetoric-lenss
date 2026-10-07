@@ -35,7 +35,7 @@ function connect() {
 }
 
 function setConnectionStatus(connected, text) {
-  $("statusDot").style.background = connected ? "#1b7f56" : "#b4380f";
+  $("statusDot").style.background = connected ? "#7FA3A0" : "#D86155";
   $("statusText").textContent = text;
 }
 
@@ -69,6 +69,8 @@ function updateScore() {
     ring.style.setProperty("--p", sc);
     ring.dataset.level = sc >= 80 ? "good" : sc >= 60 ? "warn" : "bad";
     $("score-" + k).textContent = sc;
+    const st = $("state-" + k);
+    if (st) { st.textContent = sc >= 80 ? "HEALTHY" : sc >= 60 ? "WATCH" : "CRITICAL"; st.style.color = sc >= 80 ? "var(--teal)" : sc >= 60 ? "var(--gold)" : "var(--red)"; }
     $("card-" + k).classList.toggle("active", name === sel);
   });
 }
@@ -92,6 +94,8 @@ function handleTranscript(msg) {
   const text = msg.text || "";
   if (!text) return;
   $("liveTranscript").textContent = text;
+  $("stage").classList.remove("stage-dimmed");
+  $("stageCaption").textContent = "Live transcript";
   $("liveTranscript").classList.toggle("interim", !msg.final);
   if (msg.final) setMicMessage(msg.speech_final ? "Sentence finished — analyzing…" : "Listening…");
 }
@@ -119,38 +123,44 @@ function markQuote(text, quote) {
   const i = quote ? text.toLowerCase().indexOf(quote.toLowerCase()) : -1;
   if (i < 0) return escapeHtml(text);
   const j = i + quote.length;
-  return escapeHtml(text.slice(0, i)) + "<mark>" + escapeHtml(text.slice(i, j)) + "</mark>" + escapeHtml(text.slice(j));
+  return escapeHtml(text.slice(0, i)) + '<span class="flagged-phrase">' + escapeHtml(text.slice(i, j)) + "</span>" + escapeHtml(text.slice(j));
 }
 
 function addEventToFeed(e) {
-  const div = document.createElement("div");
-  div.className = "item" + (e.accepted ? " flagged" : "");
-  const t = new Date(e.timestamp * 1000).toLocaleTimeString([], {hour: "2-digit", minute: "2-digit", second: "2-digit"});
+  const sp = e.speaker.slice(-1);
+  const t = new Date(e.timestamp * 1000).toLocaleTimeString([], {hour: "2-digit", minute: "2-digit", hour12: false});
   const down = (e.reason || "").startsWith("Classifier unavailable");
-  div.innerHTML = `
-    <div class="item-meta">${escapeHtml(e.speaker)}<br>${t}</div>
-    <div>
-      <p class="item-text">${e.accepted ? markQuote(e.text, e.quote) : escapeHtml(e.text)}</p>
-      ${e.accepted
-        ? `<p class="item-note"><b>${escapeHtml(e.fallacy_type)}, −${e.deduction}.</b> ${escapeHtml(e.explanation)}</p>`
-        : `<p class="item-note quiet">${down ? "AI unavailable, skipped" : "No flag"}</p>`}
-    </div>`;
-  $("feed").prepend(div);
+  const note = e.accepted
+    ? `↳ ${escapeHtml(e.fallacy_type)} · −${e.deduction} points · ${escapeHtml(e.explanation)}`
+    : (down ? "AI unavailable, skipped" : "No structural flag on this line");
+  const row = document.createElement("article");
+  row.className = "transcript-row";
+  row.innerHTML = `<time>${t}</time><span class="speaker-tag ${sp === "B" ? "speaker-b" : "speaker-a"}">${escapeHtml(sp)}</span>
+    <div class="transcript-copy"><p>${e.accepted ? markQuote(e.text, e.quote) : escapeHtml(e.text)}</p>
+    <span class="row-note ${e.accepted ? "flag-note" : "quiet-note"}">${note}</span></div>`;
+  $("feed").prepend(row);
   if (e.accepted) {
-    const flag = document.createElement("div");
-    flag.className = "flag";
-    flag.innerHTML = `${escapeHtml(e.fallacy_type)} <span>−${e.deduction}, score ${e.new_score}</span>`;
-    $("timeline").prepend(flag);
+    const chip = document.createElement("span");
+    chip.className = "timeline-chip";
+    chip.innerHTML = `<b>${t}</b> — ${escapeHtml(e.fallacy_type)} <em>${escapeHtml(sp)} · ${e.new_score}</em>`;
+    $("timeline").prepend(chip);
   }
 }
 
 function showAlert(e) {
-   $("alert").classList.remove("hidden");
-  pulse($("alert"), "pop");
+  const panel = $("alert");
+  panel.dataset.state = "quiet";
+  void panel.offsetWidth;
+  panel.dataset.state = "flagged";
   $("alertType").textContent = e.fallacy_type;
-  $("alertPenalty").textContent = `−${e.deduction}, score ${e.new_score}`;
+  $("alertPenalty").textContent = `−${e.deduction}`;
   $("alertQuote").textContent = `“${e.quote}”`;
   $("alertExplanation").textContent = e.explanation;
+  const live = $("liveTranscript");
+  live.innerHTML = markQuote(e.text, e.quote);
+  live.classList.remove("interim");
+  $("stage").classList.add("stage-dimmed");
+  $("stageCaption").innerHTML = `${escapeHtml(e.speaker)} <span class="caption-divider">/</span> <span style="color:var(--red)">flag detected</span>`;
 }
 
 function escapeHtml(s) {
@@ -160,7 +170,9 @@ function escapeHtml(s) {
 async function reset() {
   await stopMicrophone();
   if (state.ws?.readyState === WebSocket.OPEN) state.ws.send(JSON.stringify({ type: "reset" }));
-  $("alert").classList.add("hidden");
+  $("alert").dataset.state = "quiet";
+  $("stage").classList.remove("stage-dimmed");
+  $("stageCaption").textContent = "Live transcript";
   $("feed").innerHTML = "";
   $("timeline").innerHTML = "";
   $("liveTranscript").textContent = "Waiting for speech…";
