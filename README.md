@@ -42,3 +42,6 @@ pytest -q
 - The app needs a persistent server for its WebSocket (`/ws`). Serverless hosts
   such as Vercel do not support this; run locally or use a host that does.
 - Fallacy penalty weights are configurable values, not scientifically validated.
+
+**Live demo:** https://rhetoric-lenss.onrender.com (free tier, first load may take about a minute)
+
