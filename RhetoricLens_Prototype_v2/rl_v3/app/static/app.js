@@ -1,3 +1,4 @@
+const MIC_SVG = '<svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true"><rect x="8" y="1.5" width="8" height="13" rx="4" fill="currentColor"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3.5M8.5 21.5h7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>';
 const state = {
   scores: {"Speaker A": 100, "Speaker B": 100},
   ws: null,
@@ -101,17 +102,17 @@ function handleTranscript(msg) {
 
 function handleAudioStatus(msg) {
   if (msg.status === "started") {
-    $("micBtn").textContent = "■ Stop microphone";
+    $("micBtn").innerHTML = MIC_SVG + "Stop";
     $("micBtn").classList.add("recording");
     state.mic.active = true;
     setMicMessage(`Live STT: ${msg.provider || "Deepgram"}`);
   } else if (msg.status === "stopped") {
-    $("micBtn").textContent = "● Start microphone";
+    $("micBtn").innerHTML = MIC_SVG + "Mic";
     $("micBtn").classList.remove("recording");
     state.mic.active = false;
     setMicMessage("Microphone stopped");
   } else if (msg.status === "error") {
-    $("micBtn").textContent = "● Start microphone";
+    $("micBtn").innerHTML = MIC_SVG + "Mic";
     $("micBtn").classList.remove("recording");
     state.mic.active = false;
     setMicMessage(msg.message || "Live STT unavailable");
@@ -206,7 +207,7 @@ async function startMicrophone() {
   mute.connect(context.destination);
 
   state.mic = {active: true, context, source, processor, stream, inputRate: context.sampleRate};
-  state.ws.send(JSON.stringify({type:"audio_start", speaker}));
+  state.ws.send(JSON.stringify({type:"audio_start", speaker, language: $("langSelect").value}));
   setMicMessage(`Starting live STT at ${context.sampleRate} Hz input…`);
 
   processor.onaudioprocess = (evt) => {
@@ -258,7 +259,7 @@ async function stopMicrophone() {
   state.mic.stream?.getTracks().forEach(t => t.stop());
   if (state.ws?.readyState === WebSocket.OPEN) state.ws.send(JSON.stringify({type:"audio_stop"}));
   state.mic = {active:false, context:null, source:null, processor:null, stream:null, inputRate:48000};
-  $("micBtn").textContent = "● Start microphone";
+  $("micBtn").innerHTML = MIC_SVG + "Mic";
   $("micBtn").classList.remove("recording");
 }
 
@@ -276,42 +277,6 @@ async function toggleMicrophone() {
 }
 
 // ---- Browser Speech Recognition fallback (no Deepgram key required) ----
-function toggleBrowserSpeech() {
-  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-  if (!SR) {
-    setMicMessage("Browser speech recognition is unavailable. Use Deepgram.");
-    return;
-  }
-  if (state.speech.active) {
-    state.speech.recognition?.stop();
-    return;
-  }
-  const recognition = new SR();
-  recognition.continuous = true;
-  recognition.interimResults = true;
-  recognition.lang = "en-US";
-  recognition.onstart = () => {
-    state.speech.active = true;
-    $("browserSpeechBtn").textContent = "■ Stop browser speech";
-    setMicMessage("Browser speech recognition active");
-  };
-  recognition.onresult = (event) => {
-    for (let i = event.resultIndex; i < event.results.length; i++) {
-      const result = event.results[i];
-      const text = result[0].transcript.trim();
-      handleTranscript({text, final: result.isFinal});
-      if (result.isFinal && text) sendAnalyze(text);
-    }
-  };
-  recognition.onerror = (event) => setMicMessage(`Browser speech: ${event.error}`);
-  recognition.onend = () => {
-    state.speech.active = false;
-    $("browserSpeechBtn").textContent = "Use browser speech fallback";
-  };
-  state.speech.recognition = recognition;
-  recognition.start();
-}
-
 const demos = {
   clean: ["The proposal has three parts, and each one can be evaluated independently."],
   ad_hominem: [
@@ -348,7 +313,7 @@ function runDemo(name) {
 
 $("sendBtn").onclick = () => sendAnalyze($("inputText").value);
 $("micBtn").onclick = toggleMicrophone;
-$("browserSpeechBtn").onclick = toggleBrowserSpeech;
+
 $("resetBtn").onclick = reset;
 $("speakerSelect").onchange = updateScore;
 document.querySelectorAll("[data-demo]").forEach(btn => btn.onclick = () => runDemo(btn.dataset.demo));
@@ -361,5 +326,36 @@ fetch("/api/config").then((r) => r.json()).then((c) => {
   $("modeBadge").textContent = live ? "Live AI classifier" : "Scripted demo mode";
   $("modeBadge").dataset.mode = live ? "live" : "demo";
 }).catch(() => { $("modeBadge").textContent = "Mode unknown"; });
+
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+const setUpload = (t) => { $("uploadStatus").textContent = t; };
+$("uploadBtn").onclick = () => $("fileInput").click();
+$("fileInput").onchange = async (ev) => {
+  const file = ev.target.files[0];
+  ev.target.value = "";
+  if (!file) return;
+  if (file.size > 100 * 1024 * 1024) { setUpload("File too large (max 100 MB)"); return; }
+  if (state.ws?.readyState !== WebSocket.OPEN) { setUpload("Not connected yet. Try again in a moment."); return; }
+  setUpload("Transcribing " + file.name + "…");
+  const fd = new FormData();
+  fd.append("file", file);
+  fd.append("language", $("langSelect").value);
+  try {
+    const r = await fetch("/api/transcribe", { method: "POST", body: fd });
+    if (!r.ok) throw new Error((await r.json().catch(() => ({}))).detail || r.statusText);
+    const { utterances } = await r.json();
+    if (!utterances.length) { setUpload("No speech found in that file"); return; }
+    const base = Date.now() / 1000;
+    for (let i = 0; i < utterances.length; i++) {
+      const u = utterances[i];
+      setUpload(`Analyzing ${i + 1} of ${utterances.length}…`);
+      $("liveTranscript").textContent = u.text;
+      $("stage").classList.remove("stage-dimmed");
+      state.ws.send(JSON.stringify({ type: "analyze", data: { speaker: u.speaker, text: u.text, timestamp: base + u.start } }));
+      await sleep(900);
+    }
+    setUpload(`Done: ${utterances.length} segments from ${file.name}`);
+  } catch (e) { setUpload("Upload failed: " + e.message); }
+};
 
 connect();

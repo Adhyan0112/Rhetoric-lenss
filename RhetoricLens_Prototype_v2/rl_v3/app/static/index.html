@@ -4,9 +4,10 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="theme-color" content="#171B1A" />
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 32 32%22%3E%3Crect width=%2232%22 height=%2232%22 rx=%226%22 fill=%22%23171B1A%22/%3E%3Ccircle cx=%2215%22 cy=%2215%22 r=%228%22 fill=%22none%22 stroke=%22%23D6B66A%22 stroke-width=%223%22/%3E%3Cpath d=%22M21 21l6 6%22 stroke=%22%23D6B66A%22 stroke-width=%223%22 stroke-linecap=%22round%22/%3E%3C/svg%3E" />
     <meta name="description" content="RhetoricLens — Hear the words. See the structure." />
     <title>RhetoricLens — Live debate analyzer</title>
-    <link rel="stylesheet" href="/static/style.css" />
+    <link rel="stylesheet" href="/static/style.css?v=4" />
   </head>
   <body>
     <div class="app-shell">
@@ -62,13 +63,14 @@
           <section class="control-panel" aria-labelledby="controlTitle">
             <div class="control-heading"><div><span class="section-kicker">DIRECTOR'S BOOTH</span><h2 id="controlTitle">Analyze a line</h2></div></div>
             <div class="control-row">
-              <button class="icon-button mic-button" id="micBtn" type="button" aria-label="Toggle microphone"><span class="mic-icon" aria-hidden="true"></span><span>Mic</span></button>
-              <button class="speech-button" id="browserSpeechBtn" type="button"><span class="wave-icon" aria-hidden="true"><i></i><i></i><i></i><i></i></span> Browser speech</button>
+              <button class="icon-button mic-button" id="micBtn" type="button" aria-label="Toggle microphone"><svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true"><rect x="8" y="1.5" width="8" height="13" rx="4" fill="currentColor"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3.5M8.5 21.5h7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>Mic</button>
+              <button class="speech-button" id="uploadBtn" type="button"><span class="wave-icon" aria-hidden="true"><i></i><i></i><i></i><i></i></span> Choose audio or video</button><input id="fileInput" type="file" accept="audio/*,video/*" hidden />
               <label class="text-entry"><span class="sr-only">Analyze a transcript line</span><input id="inputText" type="text" placeholder="Type a sentence to analyze…" /><button id="sendBtn" type="button">Analyze <span>↗</span></button></label>
               <button class="reset-button" id="resetBtn" type="button">Reset</button>
-              <label class="speaker-select"><span>Speaker</span><select id="speakerSelect"><option>Speaker A</option><option>Speaker B</option></select></label>
+              <label class="speaker-select"><span>Speaker</span><select id="speakerSelect"><option>Speaker A</option><option>Speaker B</option></select></label><label class="speaker-select"><span>Language</span><select id="langSelect"><option value="en">English</option><option value="multi">Multilingual mix</option><option value="auto">Auto-detect</option><option value="hi">Hindi</option><option value="es">Spanish</option><option value="fr">French</option><option value="de">German</option><option value="pt">Portuguese</option><option value="ru">Russian</option><option value="it">Italian</option><option value="nl">Dutch</option></select></label>
             </div>
             <div id="micMessage" class="mic-message">Ready for live audio</div>
+            <div class="mic-message upload-status" id="uploadStatus"></div>
             <div class="scenario-row"><span class="scenario-label">RUN A SCENARIO</span><button class="scenario-button primary" data-demo="mixed">Play the 90-second pitch <span>↗</span></button><button class="scenario-button" data-demo="clean">Clean argument</button><button class="scenario-button" data-demo="ad_hominem">Ad hominem</button><button class="scenario-button" data-demo="false_dilemma">False dilemma</button><button class="scenario-button" data-demo="straw_man">Straw man</button></div>
           </section>
         </section>
@@ -93,6 +95,6 @@
       </main>
       <footer class="app-footer"><span>RHETORICLENS / DEBATE ANALYSIS, MADE VISIBLE</span><span>BUILT FOR HACKCOSMIC</span></footer>
     </div>
-    <script src="/static/app.js"></script>
+    <script src="/static/app.js?v=4"></script>
   </body>
 </html>
