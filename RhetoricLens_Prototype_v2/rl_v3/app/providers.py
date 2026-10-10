@@ -202,12 +202,13 @@ Return the single most conservative verdict for the CURRENT UTTERANCE.
             ],
             temperature=0,
             reasoning_effort="low",
-            max_completion_tokens=220,
+            max_completion_tokens=1024,
             response_format={
                 "type": "json_schema",
                 "json_schema": schema,
             },
         )
+        print("FINISH:", response.choices[0].finish_reason, "RAW:", response.choices[0].message.content, flush=True)
         raw = response.choices[0].message.content or "{}"
         data = json.loads(raw)
         return ModelVerdict.model_validate(data)

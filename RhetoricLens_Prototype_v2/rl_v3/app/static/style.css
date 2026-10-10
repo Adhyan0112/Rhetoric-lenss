@@ -142,6 +142,3 @@ h1, h2, p { margin: 0; } h1 { font: 500 23px/1 var(--display); margin-top: 9px; 
 .transcript-list:empty::before{content:"Nothing analyzed yet. Play the 90-second pitch, or start the microphone.";display:block;padding:20px 0;color:var(--muted);font:italic 18px/1.5 var(--display)}
 .timeline-chips:empty::before{content:"No flags so far.";color:var(--muted);font-size:12px}
 @media (prefers-reduced-motion:reduce){.hit{animation:none}}
-
-.upload-row{margin-top:10px}
-.upload-status{color:var(--muted);font-size:12px}
