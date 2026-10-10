@@ -3,6 +3,7 @@ from __future__ import annotations
 import hashlib
 import logging
 import re
+import unicodedata
 import time
 from collections import defaultdict, deque
 from dataclasses import dataclass
@@ -161,5 +162,5 @@ def _quote_matches(quote: str, source: str) -> bool:
 
 def _normalize_for_match(value: str) -> str:
     value = value.lower().replace("’", "'").replace("‘", "'")
-    value = re.sub(r"[^\w\s']", " ", value, flags=re.UNICODE)
+    value = "".join(c if (unicodedata.category(c)[0] in "LMN" or c.isspace() or c == "'") else " " for c in value)
     return re.sub(r"\s+", " ", value).strip()

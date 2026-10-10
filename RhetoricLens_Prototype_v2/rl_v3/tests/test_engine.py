@@ -79,3 +79,8 @@ def test_provider_failure_does_not_crash_and_scores_nothing():
         timestamp=120.0,
     )
     assert follow_up.accepted is True
+
+
+def test_normalize_keeps_hindi_vowel_marks():
+    from app.engine import _normalize_for_match
+    assert _normalize_for_match("मैं यहाँ हूँ!") == "मैं यहाँ हूँ"

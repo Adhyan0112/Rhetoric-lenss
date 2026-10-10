@@ -32,6 +32,7 @@ Rules:
 - quote must be an exact contiguous 3-8 word span from the CURRENT utterance.
 - explanation must contain fewer than 12 words.
 - Never invent quote text.
+- The utterance may be in ANY language, or a mix such as Hinglish. Copy the quote verbatim in its original language and script. Write the explanation in English.
 - Do not treat insults, emotion, disagreement, confidence, or sarcasm as fallacies by themselves.
 - Ad Hominem: the personal attack replaces engagement with the claim.
 - Straw Man: an identifiable opponent position is distorted or exaggerated into an easier target.

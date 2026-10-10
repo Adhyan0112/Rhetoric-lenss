@@ -25,11 +25,11 @@ class DeepgramStream:
         self.running = False
         self.speaker = "Speaker A"
 
-    async def start(self, speaker: str, on_message):
+    async def start(self, speaker: str, on_message, language: str | None = None):
         self.speaker = speaker
         params = {
             "model": settings.deepgram_model,
-            "language": settings.deepgram_language,
+            "language": ("multi" if language == "auto" else language) or settings.deepgram_language,
             "encoding": "linear16",
             "sample_rate": 16000,
             "channels": 1,

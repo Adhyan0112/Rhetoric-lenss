@@ -66,6 +66,39 @@ def runtime_config():
     }
 
 
+import httpx
+from fastapi import File, Form, HTTPException, UploadFile
+
+MAX_UPLOAD_BYTES = 100 * 1024 * 1024
+
+
+@app.post("/api/transcribe")
+async def transcribe(file: UploadFile = File(...), language: str = Form("en")):
+    """Transcribe an uploaded audio/video file with speaker labels; the browser then replays each segment through /ws."""
+    if not settings.deepgram_api_key:
+        raise HTTPException(503, "DEEPGRAM_API_KEY is not configured on the server")
+    data = await file.read()
+    if len(data) > MAX_UPLOAD_BYTES:
+        raise HTTPException(413, "File too large (max 100 MB)")
+    params = {"model": settings.deepgram_model, "diarize": "true", "utterances": "true", "smart_format": "true"}
+    params["detect_language" if language == "auto" else "language"] = "true" if language == "auto" else language
+    headers = {"Authorization": f"Token {settings.deepgram_api_key}", "Content-Type": file.content_type or "application/octet-stream"}
+    async with httpx.AsyncClient(timeout=600) as client:
+        resp = await client.post("https://api.deepgram.com/v1/listen", params=params, headers=headers, content=data)
+    if resp.status_code != 200:
+        raise HTTPException(502, f"Transcription failed (Deepgram status {resp.status_code})")
+    order: dict[int, str] = {}
+    out = []
+    for u in resp.json().get("results", {}).get("utterances") or []:
+        text = (u.get("transcript") or "").strip()
+        if not text:
+            continue
+        sid = int(u.get("speaker", 0))
+        label = order.setdefault(sid, "Speaker " + "AB"[len(order) % 2])
+        out.append({"speaker": label, "text": text, "start": float(u.get("start", 0)), "end": float(u.get("end", 0))})
+    return {"utterances": out}
+
+
 @app.websocket("/ws")
 async def websocket_endpoint(websocket: WebSocket):
     await websocket.accept()
@@ -101,7 +134,7 @@ async def websocket_endpoint(websocket: WebSocket):
                         await dg.stop()
                     try:
                         dg = DeepgramStream()
-                        await dg.start(speaker=speaker, on_message=handle_stt_message)
+                        await dg.start(speaker=speaker, on_message=handle_stt_message, language=payload.get("language"))
                         await websocket.send_json({"type": "audio_status", "status": "started", "provider": "deepgram"})
                     except DeepgramStreamingError as exc:
                         dg = None
