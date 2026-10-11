@@ -35,7 +35,7 @@ function connect() {
 }
 
 function setConnectionStatus(connected, text) {
-  $("statusDot").style.background = connected ? "#7FA3A0" : "#D86155";
+  $("statusDot").style.background = connected ? "#27F0EB" : "#D86155";
   $("statusText").textContent = text;
 }
 
@@ -70,7 +70,7 @@ function updateScore() {
     ring.dataset.level = sc >= 80 ? "good" : sc >= 60 ? "warn" : "bad";
     $("score-" + k).textContent = sc;
     const st = $("state-" + k);
-    if (st) { st.textContent = sc >= 80 ? "HEALTHY" : sc >= 60 ? "WATCH" : "CRITICAL"; st.style.color = sc >= 80 ? "var(--teal)" : sc >= 60 ? "var(--gold)" : "var(--red)"; }
+    if (st) { st.textContent = sc >= 80 ? "HEALTHY" : sc >= 60 ? "WATCH" : "CRITICAL"; st.style.color = sc >= 80 ? "var(--gold)" : sc >= 60 ? "var(--amber)" : "var(--red)"; }
     $("card-" + k).classList.toggle("active", name === sel);
   });
 }
