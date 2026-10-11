@@ -132,6 +132,9 @@ class RhetoricEngine:
         if not _quote_matches(verdict.quote, source_text):
             return False, "Quote does not match transcript"
         words = verdict.quote.split()
+        if len(words) > 8 and _quote_matches(verdict.quote, source_text):
+            verdict.quote = " ".join(words[:8])
+            words = verdict.quote.split()
         if not 3 <= len(words) <= 8:
             return False, "Quote must contain 3-8 words"
         if len(verdict.explanation.split()) >= 12:

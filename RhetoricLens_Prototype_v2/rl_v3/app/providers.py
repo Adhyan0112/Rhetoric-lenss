@@ -29,7 +29,7 @@ return no fallacy. Never infer a fallacy merely from aggressive wording.
 
 Rules:
 - Return one verdict for the CURRENT utterance.
-- quote must be an exact contiguous 3-8 word span from the CURRENT utterance.
+- quote must be an exact contiguous 3-8 word span from the CURRENT utterance. Choose the shortest phrase that shows the move; never quote the whole sentence.
 - explanation must contain fewer than 12 words.
 - Never invent quote text.
 - The utterance may be in ANY language, or a mix such as Hinglish. Copy the quote verbatim in its original language and script. Write the explanation in English.

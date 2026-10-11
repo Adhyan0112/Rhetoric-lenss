@@ -84,3 +84,25 @@ def test_provider_failure_does_not_crash_and_scores_nothing():
 def test_normalize_keeps_hindi_vowel_marks():
     from app.engine import _normalize_for_match
     assert _normalize_for_match("मैं यहाँ हूँ!") == "मैं यहाँ हूँ"
+
+
+def test_overlong_verbatim_quote_is_trimmed_not_rejected():
+    from app.engine import ModelVerdict, FallacyType
+
+    class WholeSentence(MockProvider):
+        def classify(self, text: str, context: str):
+            return ModelVerdict(
+                fallacy_detected=True,
+                fallacy_type=FallacyType("Ad Hominem"),
+                quote=text,
+                explanation="Attacks the person, not the argument.",
+                confidence=0.9,
+                argument_claim=text[:100],
+            )
+
+    engine = RhetoricEngine(WholeSentence())
+    text = "You don't understand economics, so your argument is meaningless."
+    event = engine.analyze("Speaker A", text, timestamp=100.0)
+    assert event.accepted is True
+    assert len(event.quote.split()) == 8
+    assert event.quote in text
