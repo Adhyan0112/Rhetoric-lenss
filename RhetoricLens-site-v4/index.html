@@ -1,85 +1,100 @@
 <!doctype html>
 <html lang="en">
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>RhetoricLens: live argument checker</title>
-  <link rel="stylesheet" href="/static/style.css" />
-</head>
-<body>
-<main class="shell">
-  <header class="top">
-    <div>
-      <h1>RhetoricLens</h1>
-      <p>Hear the words. See the structure.</p>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#16181C" />
+    <link rel="icon" type="image/png" href="/static/favicon.png" />
+    <meta name="description" content="RhetoricLens — Hear the words. See the structure." />
+    <title>RhetoricLens — Live debate analyzer</title>
+    <link rel="stylesheet" href="/static/style.css?v=6" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <header class="masthead">
+        <a class="brand" href="/" aria-label="RhetoricLens home">
+          <img class="brand-logo" src="/static/rhetoriclens-mark.png" alt="" />
+          <span class="brand-lockup">
+            <span class="wordmark">Rhetoric<span>Lens</span></span>
+            <span class="tagline">Hear the words. See the structure.</span>
+          </span>
+        </a>
+        <div class="session-meta">
+          <span class="live-status"><span class="status-dot" id="statusDot" aria-hidden="true"></span><span id="statusText">Connected</span></span>
+          <span class="mode-badge"><span class="badge-kicker">MODE</span><span id="modeBadge">Checking mode…</span></span>
+        </div>
+      </header>
+
+      <main class="dashboard" aria-label="RhetoricLens debate analyzer">
+        <section class="main-column">
+          <section class="stage-wrap" aria-labelledby="liveTitle">
+            <div class="stage-topline">
+              <div>
+                <span class="section-kicker">LIVE SPEECH</span>
+                <h1 id="liveTitle">Listening for structure<span class="blink-caret" aria-hidden="true">_</span></h1>
+              </div>
+              
+            </div>
+            <div class="letterbox-stage" id="stage" data-state="quiet">
+              <div class="stage-bar stage-bar-top"></div>
+              <div class="stage-field">
+                <div class="stage-caption" id="stageCaption">Live transcript</div>
+                <p class="live-line" id="liveTranscript">Waiting for speech…</p>
+                <div class="stage-signal"><span class="signal-line"></span><span>ANALYZING LANGUAGE PATTERNS</span><span class="signal-line"></span></div>
+              </div>
+              <div class="stage-bar stage-bar-bottom"></div>
+            </div>
+            
+          </section>
+
+          <section class="transcript-panel" aria-labelledby="transcriptTitle">
+            <div class="panel-heading">
+              <div><span class="section-kicker">EVIDENCE TRAIL</span><h2 id="transcriptTitle">Transcript history</h2></div>
+              
+            </div>
+            <div class="transcript-list" id="feed"></div>
+          </section>
+
+          <section class="timeline-panel" aria-labelledby="timelineTitle">
+            <div class="panel-heading compact-heading"><div><span class="section-kicker">FLAG TIMELINE</span><h2 id="timelineTitle">Moves under review</h2></div></div>
+            <div class="timeline-chips" id="timeline"></div>
+          </section>
+
+          <section class="control-panel" aria-labelledby="controlTitle">
+            <div class="control-heading"><div><span class="section-kicker">DIRECTOR'S BOOTH</span><h2 id="controlTitle">Analyze a line</h2></div></div>
+            <div class="control-row">
+              <button class="icon-button mic-button" id="micBtn" type="button" aria-label="Toggle microphone"><svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true"><rect x="8" y="1.5" width="8" height="13" rx="4" fill="currentColor"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3.5M8.5 21.5h7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>Mic</button>
+              <button class="speech-button" id="uploadBtn" type="button"><span class="wave-icon" aria-hidden="true"><i></i><i></i><i></i><i></i></span> Choose audio or video</button><input id="fileInput" type="file" accept="audio/*,video/*" hidden />
+              <label class="text-entry"><span class="sr-only">Analyze a transcript line</span><input id="inputText" type="text" placeholder="Type a sentence to analyze…" /><button id="sendBtn" type="button">Analyze <span>↗</span></button></label>
+              <button class="reset-button" id="resetBtn" type="button">Reset</button>
+              <label class="speaker-select"><span>Speaker</span><select id="speakerSelect"><option>Speaker A</option><option>Speaker B</option></select></label><label class="speaker-select"><span>Language</span><select id="langSelect"><option value="en">English</option><option value="multi">Multilingual mix</option><option value="auto">Auto-detect</option><option value="hi">Hindi</option><option value="es">Spanish</option><option value="fr">French</option><option value="de">German</option><option value="pt">Portuguese</option><option value="ru">Russian</option><option value="it">Italian</option><option value="nl">Dutch</option></select></label>
+            </div>
+            <div id="micMessage" class="mic-message">Ready for live audio</div>
+            <div class="mic-message upload-status" id="uploadStatus"></div>
+            <div class="scenario-row"><span class="scenario-label">RUN A SCENARIO</span><button class="scenario-button primary" data-demo="mixed">Play the 90-second pitch <span>↗</span></button><button class="scenario-button" data-demo="clean">Clean argument</button><button class="scenario-button" data-demo="ad_hominem">Ad hominem</button><button class="scenario-button" data-demo="false_dilemma">False dilemma</button><button class="scenario-button" data-demo="straw_man">Straw man</button></div>
+          </section>
+        </section>
+
+        <aside class="intelligence-rail" aria-label="Speaker scores and live alert">
+          <section class="score-section">
+            <div class="rail-heading"><span class="section-kicker">SPEAKER SCORE</span><span class="rail-index">01 / 02</span></div>
+            <div class="score-grid">
+              <article class="score-card active" id="card-A" data-speaker="A"><div class="score-card-top"><span class="speaker-name">Speaker A</span><span class="score-state" id="state-A">HEALTHY</span></div><div class="gauge" id="ring-A" data-level="good" style="--p:100"><svg viewBox="0 0 120 120" aria-hidden="true"><circle class="gauge-track" cx="60" cy="60" r="50"></circle><circle class="gauge-value" cx="60" cy="60" r="50"></circle></svg><div class="gauge-number"><strong id="score-A">100</strong><small>/100</small></div><div class="gauge-ticks" aria-hidden="true"><span></span><span></span><span></span><span></span></div></div><div class="score-caption">Reasoning clarity</div></article>
+              <article class="score-card" id="card-B" data-speaker="B"><div class="score-card-top"><span class="speaker-name">Speaker B</span><span class="score-state" id="state-B">HEALTHY</span></div><div class="gauge" id="ring-B" data-level="good" style="--p:100"><svg viewBox="0 0 120 120" aria-hidden="true"><circle class="gauge-track" cx="60" cy="60" r="50"></circle><circle class="gauge-value" cx="60" cy="60" r="50"></circle></svg><div class="gauge-number"><strong id="score-B">100</strong><small>/100</small></div><div class="gauge-ticks" aria-hidden="true"><span></span><span></span><span></span><span></span></div></div><div class="score-caption">Reasoning clarity</div></article>
+            </div>
+          </section>
+
+          <section class="alert-panel" id="alert" aria-live="polite" data-state="quiet">
+            <div class="alert-top"><span class="alert-icon">!</span><span class="section-kicker">LIVE FLAG</span></div>
+            <div id="quietAlert"><h2>Signal is clean.</h2><p>RhetoricLens will surface a move when the sentence shifts from evidence to pressure.</p><div class="quiet-rule"></div><span class="quiet-caption">NO ACTIVE FALLACY</span></div>
+            <div id="flagAlert" class="flag-alert-content"><div class="flag-title-row"><h2 id="alertType">Appeal to fear</h2><span class="penalty" id="alertPenalty">−8</span></div><blockquote id="alertQuote">“If we don't act now”</blockquote><p id="alertExplanation">The line leans on urgency and an implied consequence instead of giving the audience evidence to evaluate.</p></div>
+          </section>
+
+          <section class="rail-note"><span class="section-kicker">CLASSIFIER NOTE</span><p>Flags are cues for inspection, not verdicts. Read the move in context.</p></section>
+        </aside>
+      </main>
+      <footer class="app-footer"><span>RHETORICLENS / DEBATE ANALYSIS, MADE VISIBLE</span><span>BUILT FOR HACKCOSMIC</span></footer>
     </div>
-    <div class="badges">
-      <span id="modeBadge" class="badge">Checking mode…</span>
-      <span class="status"><span id="statusDot"></span><span id="statusText">Connecting…</span></span>
-    </div>
-  </header>
-
-  <section class="scores" aria-label="Rigor scores">
-    <button class="score-card active" id="card-A" type="button">
-      <span class="ring" id="ring-A" data-level="good" style="--p:100"><svg viewBox="0 0 100 100" aria-hidden="true"><circle class="bg" cx="50" cy="50" r="42"/><circle class="fg" cx="50" cy="50" r="42"/></svg><b id="score-A">100</b></span>
-      <span class="who"><strong>Speaker A</strong><small>Rigor score</small></span>
-    </button>
-    <button class="score-card" id="card-B" type="button">
-      <span class="ring" id="ring-B" data-level="good" style="--p:100"><svg viewBox="0 0 100 100" aria-hidden="true"><circle class="bg" cx="50" cy="50" r="42"/><circle class="fg" cx="50" cy="50" r="42"/></svg><b id="score-B">100</b></span>
-      <span class="who"><strong>Speaker B</strong><small>Rigor score</small></span>
-    </button>
-  </section>
-
-  <div class="layout">
-    <section class="page">
-      <h2>Live speech</h2>
-      <p id="liveTranscript" class="live">Waiting for speech…</p>
-
-      <div id="alert" class="alert hidden" role="status">
-        <div class="alert-top"><span id="alertType"></span><span id="alertPenalty"></span></div>
-        <div id="alertQuote"></div>
-        <p id="alertExplanation"></p>
-      </div>
-
-      <h2>Transcript</h2>
-      <div id="feed" class="feed"></div>
-
-      <h2>Flags</h2>
-      <div id="timeline" class="timeline-track"></div>
-    </section>
-
-    <aside class="rail">
-      <section>
-        <h2>Say or type something</h2>
-        <textarea id="inputText" placeholder="Type a finished sentence, then press Analyze."></textarea>
-        <div class="row">
-          <label for="speakerSelect">Speaking as</label>
-          <select id="speakerSelect"><option>Speaker A</option><option>Speaker B</option></select>
-        </div>
-        <div class="row">
-          <button id="sendBtn" class="primary" type="button">Analyze</button>
-          <button id="resetBtn" type="button">Reset</button>
-        </div>
-        <div class="row">
-          <button id="micBtn" class="mic-button" type="button">Start microphone</button>
-          <button id="browserSpeechBtn" type="button">Use browser speech</button>
-        </div>
-        <div id="micMessage">Ready for live audio</div>
-      </section>
-      <section>
-        <h2>Demo scenarios</h2>
-        <div class="demos">
-          <button data-demo="clean" type="button">Clean argument</button>
-          <button data-demo="ad_hominem" type="button">Ad hominem</button>
-          <button data-demo="false_dilemma" type="button">False dilemma</button>
-          <button data-demo="straw_man" type="button">Straw man</button>
-          <button data-demo="mixed" type="button">90-second pitch sequence</button>
-        </div>
-      </section>
-    </aside>
-  </div>
-  <footer>Built for HackCosmic. Penalty weights are configurable, not scientifically validated.</footer>
-</main>
-<script src="/static/app.js"></script>
-</body>
+    <script src="/static/app.js?v=6"></script>
+  </body>
 </html>

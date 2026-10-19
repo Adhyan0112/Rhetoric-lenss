@@ -54,3 +54,6 @@ body>header{z-index:5}
 .feature-ribbon{background:rgba(9,12,10,.82)}
 @media(max-width:700px){.floating-emblem__rig{left:69%;width:112vw}.floating-emblem__glow{left:73%;width:112vw}.layer-back{opacity:.075}.layer-mid-a{opacity:.09}.layer-mid-b{opacity:.1}.layer-front{opacity:.13}}
 @media(prefers-reduced-motion:reduce){.floating-emblem{transition:none}.floating-emblem__rig{will-change:auto}}
+
+/* Smooth cross-page fade into the analyzer (ignored where unsupported). */
+@view-transition{navigation:auto}

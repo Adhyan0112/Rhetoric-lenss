@@ -8,7 +8,6 @@ const state = {
   providerLabel: "",
   providerMode: "",
   mic: {active: false, context: null, source: null, processor: null, stream: null, inputRate: 48000},
-  speech: {recognition: null, active: false},
 };
 
 const $ = (id) => document.getElementById(id);
@@ -41,7 +40,10 @@ function connect() {
 }
 
 function setConnectionStatus(connected, text) {
-  $("statusDot").style.background = connected ? "#27F0EB" : "#D86155";
+  const dot = $("statusDot");
+  dot.style.background = connected ? "var(--mint-bright)" : "var(--red)";
+  dot.style.boxShadow = connected ? "0 0 12px rgba(114,245,197,.65)" : "0 0 12px rgba(244,118,143,.6)";
+  dot.style.animationPlayState = connected ? "running" : "paused";
   $("statusText").textContent = text;
 }
 
@@ -90,7 +92,7 @@ function updateScore() {
     ring.dataset.level = sc >= 80 ? "good" : sc >= 60 ? "warn" : "bad";
     animateScore($("score-" + k), sc);
     const st = $("state-" + k);
-    if (st) { st.textContent = sc >= 80 ? "HEALTHY" : sc >= 60 ? "WATCH" : "CRITICAL"; st.style.color = sc >= 80 ? "var(--gold)" : sc >= 60 ? "var(--amber)" : "var(--red)"; }
+    if (st) { st.textContent = sc >= 80 ? "HEALTHY" : sc >= 60 ? "WATCH" : "CRITICAL"; st.style.color = sc >= 80 ? "var(--mint-bright)" : sc >= 60 ? "var(--amber)" : "var(--pink)"; }
     $("card-" + k).classList.toggle("active", name === sel);
   });
 }
@@ -210,7 +212,7 @@ function showAlert(e) {
   live.innerHTML = markQuote(e.text, e.quote);
   live.classList.remove("interim");
   $("stage").classList.add("stage-dimmed");
-  $("stageCaption").innerHTML = `${escapeHtml(e.speaker)} <span class="caption-divider">/</span> <span style="color:var(--red)">flag detected</span>`;
+  $("stageCaption").innerHTML = `${escapeHtml(e.speaker)} <span class="caption-divider">/</span> <span style="color:var(--pink)">flag detected</span>`;
 }
 
 function escapeHtml(s) {
@@ -351,7 +353,7 @@ async function toggleMicrophone() {
   }
 }
 
-// ---- Browser Speech Recognition fallback (no Deepgram key required) ----
+// ---- Scripted demo scenarios (no API key required) ----
 const demos = {
   debate: [
     {speaker: "Speaker A", text: "The city should test two evening bus routes because several neighborhoods have no service after eight."},
