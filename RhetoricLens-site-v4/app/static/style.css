@@ -261,3 +261,18 @@ blockquote { margin: 22px 0 0; padding: 0 0 0 12px; border-left: 2px solid var(-
   .floating-emblem__rig { animation: none; will-change: auto; }
   .control-row button.ignition-click::after, .scenario-row button.ignition-click::after { display: none; }
 }
+
+/* ---- Lite mode (weak devices; set by perf.js): same layout and behaviour, fewer effects ---- */
+html[data-perf="lite"] body::after{display:none}
+html[data-perf="lite"] .floating-emblem{perspective:none;contain:strict}
+html[data-perf="lite"] .floating-emblem__glow{filter:none;opacity:.5}
+html[data-perf="lite"] .floating-emblem__rig{animation:none;mix-blend-mode:normal;transform-style:flat;will-change:auto;opacity:.3}
+html[data-perf="lite"] .layer-back,html[data-perf="lite"] .layer-mid-a,html[data-perf="lite"] .layer-mid-b{display:none}
+html[data-perf="lite"] .layer-front{opacity:.24;filter:brightness(.66) saturate(1.08) hue-rotate(91deg)}
+html[data-perf="lite"] .masthead,html[data-perf="lite"] .stage-wrap,html[data-perf="lite"] .transcript-panel,html[data-perf="lite"] .timeline-panel,html[data-perf="lite"] .control-panel,html[data-perf="lite"] .intelligence-rail,html[data-perf="lite"] .app-footer{animation:none}
+html[data-perf="lite"] .status-dot,html[data-perf="lite"] .tiny-dot,html[data-perf="lite"] .blink-caret{animation:none}
+html[data-perf="lite"] .letterbox-stage,html[data-perf="lite"] .alert-panel{box-shadow:none}
+html[data-perf="lite"] .gauge-value{filter:none}
+html[data-perf="lite"] .transcript-row,html[data-perf="lite"] .timeline-chip{animation:none}
+html[data-perf="lite"] .thinking-button{box-shadow:none}
+
