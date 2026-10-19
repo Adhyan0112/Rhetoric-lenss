@@ -33,7 +33,13 @@ class RhetoricEngine:
         self.events: list[DetectionEvent] = []
         self._recent_fingerprints: dict[str, float] = {}
 
-    def analyze(self, speaker: str, text: str, timestamp: float | None = None) -> DetectionEvent:
+    def analyze(
+        self,
+        speaker: str,
+        text: str,
+        timestamp: float | None = None,
+        provider_override: Provider | None = None,
+    ) -> DetectionEvent:
         ts = timestamp if timestamp is not None else time.time()
         text = re.sub(r"\s+", " ", text).strip()
         self._append(speaker, text, ts)
@@ -41,7 +47,7 @@ class RhetoricEngine:
         context = "\n".join(
             f"[{item.speaker}] {item.text}" for item in self.buffer
         )
-        verdict, error = self._classify_safely(text, context)
+        verdict, error = self._classify_safely(text, context, provider_override)
         if error:
             accepted, reason = False, f"Classifier unavailable ({error}); skipped"
         else:
@@ -71,10 +77,15 @@ class RhetoricEngine:
         self.events = self.events[-100:]
         return event
 
-    def _classify_safely(self, text: str, context: str) -> tuple[ModelVerdict, str]:
+    def _classify_safely(
+        self,
+        text: str,
+        context: str,
+        provider_override: Provider | None = None,
+    ) -> tuple[ModelVerdict, str]:
         """Fail open: a provider timeout / bad JSON must never kill the session."""
         try:
-            return self.provider.classify(text, context), ""
+            return (provider_override or self.provider).classify(text, context), ""
         except Exception as exc:  # noqa: BLE001 - any provider failure is non-fatal
             logger.warning("Classifier failed: %s: %s", type(exc).__name__, exc)
             return (

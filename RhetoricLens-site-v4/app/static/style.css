@@ -140,7 +140,7 @@ h1, h2, p { margin: 0; } h1 { font: 500 23px/1 var(--display); margin-top: 9px; 
 .mic-button.recording{border-color:var(--red);color:var(--red)}
 .flag-note{color:var(--red)}
 .live-line.interim{color:var(--muted);font-style:italic}
-.transcript-list:empty::before{content:"Nothing analyzed yet. Play the 90-second pitch, or start the microphone.";display:block;padding:20px 0;color:var(--muted);font:italic 18px/1.5 var(--display)}
+.transcript-list:empty::before{content:"Nothing analyzed yet. Play the debate demo or start the microphone.";display:block;padding:20px 0;color:var(--muted);font:italic 18px/1.5 var(--display)}
 .timeline-chips:empty::before{content:"No flags so far.";color:var(--muted);font-size:12px}
 @media (prefers-reduced-motion:reduce){.hit{animation:none}}
 
@@ -148,3 +148,44 @@ h1, h2, p { margin: 0; } h1 { font: 500 23px/1 var(--display); margin-top: 9px; 
 .upload-status{color:var(--muted);font-size:12px}
 
 .brand-logo{height:44px;width:auto;display:block}
+
+/* Tactile button feedback and live analysis states */
+.control-row button,.scenario-row button{isolation:isolate;overflow:hidden;transition:transform .16s ease,border-color .2s ease,background-color .2s ease,box-shadow .2s ease}
+.control-row button:active,.scenario-row button:active{transform:translateY(1px) scale(.975)}
+.control-row button.ignition-click::after,.scenario-row button.ignition-click::after{content:"";position:absolute;left:var(--click-x,50%);top:var(--click-y,50%);z-index:0;width:10px;height:10px;border:1px solid rgba(39,240,235,.75);border-radius:50%;pointer-events:none;transform:translate(-50%,-50%) scale(.1);animation:ignition-ripple .58s cubic-bezier(.15,.7,.25,1) both}
+.control-row button>*,.scenario-row button>*{position:relative;z-index:1}
+@keyframes ignition-ripple{to{opacity:0;transform:translate(-50%,-50%) scale(14);border-width:0}}
+.thinking-button{position:relative;min-width:113px;display:flex;align-items:center;justify-content:space-between;gap:14px;overflow:hidden;background:linear-gradient(135deg,var(--gold),#b5fff4)!important;box-shadow:0 2px 0 rgba(255,255,255,.24) inset,0 4px 15px rgba(39,240,235,.12);transition:filter .2s,box-shadow .25s,transform .16s}
+.thinking-button:hover{filter:brightness(1.08);box-shadow:0 2px 0 rgba(255,255,255,.32) inset,0 5px 23px rgba(39,240,235,.24)}
+.thinking-button .thinking-trace{position:absolute;inset:0;pointer-events:none;opacity:0;background:linear-gradient(100deg,transparent 18%,rgba(255,255,255,.3) 46%,transparent 72%);transform:translateX(-130%)}
+.thinking-button.is-thinking{box-shadow:0 0 0 1px rgba(154,247,243,.65),0 0 20px rgba(39,240,235,.25),0 3px 14px rgba(39,240,235,.17)}
+.thinking-button.is-thinking .thinking-trace{opacity:1;animation:thinking-sweep 1.65s ease-in-out infinite}
+.analyze-label{display:flex;align-items:center;gap:7px;white-space:nowrap}
+.thinking-orbit{position:relative;width:15px;height:15px;flex:0 0 15px;border:1px solid rgba(15,17,20,.36);border-radius:50%;transition:border-color .2s}
+.thinking-orbit::after{content:"";position:absolute;width:4px;height:4px;left:1px;top:1px;border-radius:50%;background:#122626;box-shadow:0 0 5px rgba(15,17,20,.2)}
+.is-thinking .thinking-orbit{border-color:rgba(15,17,20,.58);animation:thinking-orbit .9s linear infinite}
+.is-thinking .thinking-orbit::after{background:#123d3d;box-shadow:0 0 7px #197a78}
+.button-arrow{font-size:15px;line-height:1;transition:transform .2s}
+.thinking-button:hover .button-arrow{transform:translate(2px,-2px)}
+@keyframes thinking-orbit{to{transform:rotate(360deg)}}
+@keyframes thinking-sweep{50%{transform:translateX(130%)}100%{transform:translateX(130%)}}
+.mic-button{min-width:96px;justify-content:center;transition:all .2s ease}
+.mic-button svg{flex:0 0 16px}
+.mic-button.recording{min-width:136px;border-color:rgba(216,97,85,.8);color:#ff9389;background:rgba(216,97,85,.1);box-shadow:0 0 18px rgba(216,97,85,.12)}
+.mic-button.starting{border-color:var(--gold);color:var(--gold-soft)}
+.mic-sound-bars{height:15px;display:inline-flex;align-items:center;gap:2px;margin-left:1px}
+.mic-sound-bars i{display:block;width:2px;height:5px;border-radius:2px;background:currentColor;transform-origin:center;animation:mic-wave .56s ease-in-out infinite alternate}
+.mic-sound-bars i:nth-child(2){height:10px;animation-delay:-.17s}.mic-sound-bars i:nth-child(3){height:14px;animation-delay:-.36s}.mic-sound-bars i:nth-child(4){height:8px;animation-delay:-.24s}.mic-sound-bars i:nth-child(5){height:12px;animation-delay:-.08s}
+@keyframes mic-wave{to{transform:scaleY(.35);opacity:.62}}
+.demo-launch{display:inline-flex;align-items:center;gap:7px;transition:background .2s,border-color .2s,color .2s}
+.demo-launch.demo-playing{background:rgba(39,240,235,.11);border-color:var(--gold);color:var(--gold-soft)}
+.demo-play-icon{font-size:8px;color:var(--gold);transition:transform .2s}
+.demo-playing .demo-play-icon{animation:demo-pulse 1s ease-in-out infinite}
+@keyframes demo-pulse{50%{transform:scale(.72);opacity:.6}}
+.transcript-row{animation:transcript-in .36s cubic-bezier(.2,.7,.25,1) both}
+.timeline-chip{animation:chip-in .32s cubic-bezier(.2,.7,.25,1) both}
+@keyframes transcript-in{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+@keyframes chip-in{from{opacity:0;transform:scale(.94)}to{opacity:1;transform:scale(1)}}
+.transcript-list:empty::before{content:"Nothing analyzed yet. Play the debate demo or start the microphone."}
+@media(max-width:760px){.mic-button.recording{min-width:130px}.thinking-button{min-width:105px}}
+@media(prefers-reduced-motion:reduce){.thinking-orbit,.thinking-trace,.mic-sound-bars i,.demo-playing .demo-play-icon,.transcript-row,.timeline-chip{animation:none!important}.control-row button.ignition-click::after,.scenario-row button.ignition-click::after{display:none}}

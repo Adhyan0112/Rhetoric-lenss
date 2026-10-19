@@ -7,7 +7,7 @@
     <link rel="icon" type="image/png" href="/static/favicon.png" />
     <meta name="description" content="RhetoricLens — Hear the words. See the structure." />
     <title>RhetoricLens — Live debate analyzer</title>
-    <link rel="stylesheet" href="/static/style.css?v=6" />
+    <link rel="stylesheet" href="/static/style.css?v=8" />
   </head>
   <body>
     <div class="app-shell">
@@ -63,15 +63,15 @@
           <section class="control-panel" aria-labelledby="controlTitle">
             <div class="control-heading"><div><span class="section-kicker">DIRECTOR'S BOOTH</span><h2 id="controlTitle">Analyze a line</h2></div></div>
             <div class="control-row">
-              <button class="icon-button mic-button" id="micBtn" type="button" aria-label="Toggle microphone"><svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true"><rect x="8" y="1.5" width="8" height="13" rx="4" fill="currentColor"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3.5M8.5 21.5h7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>Mic</button>
+              <button class="icon-button mic-button" id="micBtn" type="button" aria-label="Start microphone" aria-pressed="false"><svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true"><rect x="8" y="1.5" width="8" height="13" rx="4" fill="currentColor"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3.5M8.5 21.5h7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg><span class="mic-idle-label">Mic</span></button>
               <button class="speech-button" id="uploadBtn" type="button"><span class="wave-icon" aria-hidden="true"><i></i><i></i><i></i><i></i></span> Choose audio or video</button><input id="fileInput" type="file" accept="audio/*,video/*" hidden />
-              <label class="text-entry"><span class="sr-only">Analyze a transcript line</span><input id="inputText" type="text" placeholder="Type a sentence to analyze…" /><button id="sendBtn" type="button">Analyze <span>↗</span></button></label>
+              <label class="text-entry"><span class="sr-only">Analyze a transcript line</span><input id="inputText" type="text" placeholder="Type a sentence to analyze…" /><button id="sendBtn" class="thinking-button" type="button" aria-live="polite"><span class="thinking-trace" aria-hidden="true"></span><span class="analyze-label"><span class="thinking-orbit" aria-hidden="true"></span><span class="analyze-text">Analyze</span></span><span class="button-arrow" aria-hidden="true">↗</span></button></label>
               <button class="reset-button" id="resetBtn" type="button">Reset</button>
-              <label class="speaker-select"><span>Speaker</span><select id="speakerSelect"><option>Speaker A</option><option>Speaker B</option></select></label><label class="speaker-select"><span>Language</span><select id="langSelect"><option value="en">English</option><option value="multi">Multilingual mix</option><option value="auto">Auto-detect</option><option value="hi">Hindi</option><option value="es">Spanish</option><option value="fr">French</option><option value="de">German</option><option value="pt">Portuguese</option><option value="ru">Russian</option><option value="it">Italian</option><option value="nl">Dutch</option></select></label>
+              <label class="speaker-select"><span>Speaker</span><select id="speakerSelect"><option>Speaker A</option><option>Speaker B</option></select></label><label class="speaker-select"><span>Language</span><select id="langSelect"><option value="en">English</option><option value="hi">Hindi</option></select></label>
             </div>
             <div id="micMessage" class="mic-message">Ready for live audio</div>
             <div class="mic-message upload-status" id="uploadStatus"></div>
-            <div class="scenario-row"><span class="scenario-label">RUN A SCENARIO</span><button class="scenario-button primary" data-demo="mixed">Play the 90-second pitch <span>↗</span></button><button class="scenario-button" data-demo="clean">Clean argument</button><button class="scenario-button" data-demo="ad_hominem">Ad hominem</button><button class="scenario-button" data-demo="false_dilemma">False dilemma</button><button class="scenario-button" data-demo="straw_man">Straw man</button></div>
+            <div class="scenario-row"><span class="scenario-label">RUN A SCENARIO</span><button class="scenario-button primary demo-launch" data-demo="debate"><span class="demo-play-icon" aria-hidden="true">▶</span><span class="demo-label">Play demo</span><span>↗</span></button><button class="scenario-button" data-demo="clean">Clean argument</button><button class="scenario-button" data-demo="ad_hominem">Ad hominem</button><button class="scenario-button" data-demo="false_dilemma">False dilemma</button><button class="scenario-button" data-demo="straw_man">Straw man</button></div>
           </section>
         </section>
 
@@ -87,14 +87,14 @@
           <section class="alert-panel" id="alert" aria-live="polite" data-state="quiet">
             <div class="alert-top"><span class="alert-icon">!</span><span class="section-kicker">LIVE FLAG</span></div>
             <div id="quietAlert"><h2>Signal is clean.</h2><p>RhetoricLens will surface a move when the sentence shifts from evidence to pressure.</p><div class="quiet-rule"></div><span class="quiet-caption">NO ACTIVE FALLACY</span></div>
-            <div id="flagAlert" class="flag-alert-content"><div class="flag-title-row"><h2 id="alertType">Appeal to fear</h2><span class="penalty" id="alertPenalty">−8</span></div><blockquote id="alertQuote">“If we don't act now”</blockquote><p id="alertExplanation">The line leans on urgency and an implied consequence instead of giving the audience evidence to evaluate.</p></div>
+            <div id="flagAlert" class="flag-alert-content"><div class="flag-title-row"><h2 id="alertType">Ad Hominem</h2><span class="penalty" id="alertPenalty">−8</span></div><blockquote id="alertQuote">“You don't understand economics”</blockquote><p id="alertExplanation">Attacks the speaker instead of addressing the argument.</p></div>
           </section>
 
           <section class="rail-note"><span class="section-kicker">CLASSIFIER NOTE</span><p>Flags are cues for inspection, not verdicts. Read the move in context.</p></section>
         </aside>
       </main>
-      <footer class="app-footer"><span>RHETORICLENS / DEBATE ANALYSIS, MADE VISIBLE</span><span>BUILT FOR HACKCOSMIC</span></footer>
+      <footer class="app-footer"><span>RHETORICLENS / DEBATE ANALYSIS, MADE VISIBLE</span><span>JAI 2026 · JIIT NOIDA</span></footer>
     </div>
-    <script src="/static/app.js?v=6"></script>
+    <script src="/static/app.js?v=8"></script>
   </body>
 </html>

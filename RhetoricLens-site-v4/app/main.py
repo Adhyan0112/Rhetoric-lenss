@@ -13,7 +13,7 @@ from fastapi.staticfiles import StaticFiles
 from .deepgram_stream import DeepgramStream, DeepgramStreamingError
 from .engine import RhetoricEngine
 from .models import AnalyzeRequest
-from .providers import get_provider
+from .providers import MockProvider, get_provider
 from .config import settings
 
 BASE_DIR = Path(__file__).resolve().parent
@@ -23,10 +23,17 @@ app.mount("/static", StaticFiles(directory=BASE_DIR / "static"), name="static")
 
 provider = get_provider()
 engine = RhetoricEngine(provider)
+# Keep the scripted walkthrough repeatable even when the live Groq provider is enabled.
+demo_provider = MockProvider()
 
 
 @app.get("/")
 def index() -> FileResponse:
+    return FileResponse(BASE_DIR / "static" / "landing.html")
+
+
+@app.get("/app")
+def analysis_app() -> FileResponse:
     return FileResponse(BASE_DIR / "static" / "index.html")
 
 
@@ -123,9 +130,15 @@ async def websocket_endpoint(websocket: WebSocket):
                 payload = json.loads(message["text"])
                 kind = payload.get("type")
                 if kind == "analyze":
-                    req = AnalyzeRequest.model_validate(payload.get("data", {}))
+                    data = payload.get("data", {})
+                    scripted_demo = bool(data.pop("scripted_demo", False))
+                    req = AnalyzeRequest.model_validate(data)
                     event = await asyncio.to_thread(
-                        engine.analyze, req.speaker, req.text, req.timestamp
+                        engine.analyze,
+                        req.speaker,
+                        req.text,
+                        req.timestamp,
+                        demo_provider if scripted_demo else None,
                     )
                     await websocket.send_json({"type": "detection", "data": event.model_dump()})
                 elif kind == "audio_start":

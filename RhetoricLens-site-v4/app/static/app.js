@@ -3,6 +3,10 @@ const state = {
   scores: {"Speaker A": 100, "Speaker B": 100},
   ws: null,
   demoTimer: null,
+  demoRunning: false,
+  pendingAnalyses: 0,
+  providerLabel: "",
+  providerMode: "",
   mic: {active: false, context: null, source: null, processor: null, stream: null, inputRate: 48000},
   speech: {recognition: null, active: false},
 };
@@ -19,6 +23,8 @@ function connect() {
   };
   state.ws.onclose = () => {
     setConnectionStatus(false, "Disconnected");
+    state.pendingAnalyses = 0;
+    updateAnalyzeButton();
     setMicMessage("WebSocket disconnected");
     setTimeout(connect, 1200);
   };
@@ -44,12 +50,26 @@ function setMicMessage(text) {
   if (el) el.textContent = text;
 }
 
-function sendAnalyze(text, speaker = $("speakerSelect").value) {
+function sendAnalyze(text, speaker = $("speakerSelect").value, scriptedDemo = false) {
   if (!text.trim()) return;
   if (state.ws?.readyState === WebSocket.OPEN) {
-    state.ws.send(JSON.stringify({ type: "analyze", data: { speaker, text, timestamp: Date.now() / 1000 } }));
+    state.pendingAnalyses += 1;
+    updateAnalyzeButton();
+    state.ws.send(JSON.stringify({ type: "analyze", data: { speaker, text, timestamp: Date.now() / 1000, ...(scriptedDemo ? {scripted_demo: true} : {}) } }));
+  } else {
+    setMicMessage("Not connected yet. Try again in a moment.");
+    return;
   }
   $("inputText").value = "";
+}
+
+function updateAnalyzeButton() {
+  const button = $("sendBtn");
+  if (!button) return;
+  const busy = state.pendingAnalyses > 0;
+  button.classList.toggle("is-thinking", busy);
+  button.setAttribute("aria-busy", String(busy));
+  button.querySelector(".analyze-text").textContent = busy ? "Analyzing" : "Analyze";
 }
 
 function renderState(snapshot) {
@@ -68,11 +88,29 @@ function updateScore() {
     const ring = $("ring-" + k);
     ring.style.setProperty("--p", sc);
     ring.dataset.level = sc >= 80 ? "good" : sc >= 60 ? "warn" : "bad";
-    $("score-" + k).textContent = sc;
+    animateScore($("score-" + k), sc);
     const st = $("state-" + k);
     if (st) { st.textContent = sc >= 80 ? "HEALTHY" : sc >= 60 ? "WATCH" : "CRITICAL"; st.style.color = sc >= 80 ? "var(--gold)" : sc >= 60 ? "var(--amber)" : "var(--red)"; }
     $("card-" + k).classList.toggle("active", name === sel);
   });
+}
+
+function animateScore(element, target) {
+  const from = Number(element.textContent) || 0;
+  if (from === target || window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+    element.textContent = target;
+    return;
+  }
+  if (element.scoreFrame) cancelAnimationFrame(element.scoreFrame);
+  const started = performance.now();
+  const duration = 560;
+  const step = (now) => {
+    const progress = Math.min(1, (now - started) / duration);
+    const eased = 1 - Math.pow(1 - progress, 3);
+    element.textContent = Math.round(from + (target - from) * eased);
+    if (progress < 1) element.scoreFrame = requestAnimationFrame(step);
+  };
+  element.scoreFrame = requestAnimationFrame(step);
 }
 
 function pulse(el, cls) {
@@ -82,6 +120,8 @@ function pulse(el, cls) {
 }
 
 function handleDetection(e) {
+  state.pendingAnalyses = Math.max(0, state.pendingAnalyses - 1);
+  updateAnalyzeButton();
   state.scores[e.speaker] = e.new_score;
   updateScore();
   addEventToFeed(e);
@@ -102,21 +142,31 @@ function handleTranscript(msg) {
 
 function handleAudioStatus(msg) {
   if (msg.status === "started") {
-    $("micBtn").innerHTML = MIC_SVG + "Stop";
+    if (!state.mic.context) {
+      if (state.ws?.readyState === WebSocket.OPEN) state.ws.send(JSON.stringify({type:"audio_stop"}));
+      return;
+    }
+    $("micBtn").innerHTML = '<span class="mic-glyph">' + MIC_SVG + '</span><span class="mic-listening-label">Listening</span><span class="mic-sound-bars" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></span>';
     $("micBtn").classList.add("recording");
+    $("micBtn").classList.remove("starting");
+    $("micBtn").setAttribute("aria-label", "Stop microphone");
+    $("micBtn").setAttribute("aria-pressed", "true");
     state.mic.active = true;
     setMicMessage(`Live STT: ${msg.provider || "Deepgram"}`);
   } else if (msg.status === "stopped") {
-    $("micBtn").innerHTML = MIC_SVG + "Mic";
-    $("micBtn").classList.remove("recording");
+    resetMicButton();
     state.mic.active = false;
     setMicMessage("Microphone stopped");
   } else if (msg.status === "error") {
-    $("micBtn").innerHTML = MIC_SVG + "Mic";
-    $("micBtn").classList.remove("recording");
-    state.mic.active = false;
-    setMicMessage(msg.message || "Live STT unavailable");
+    stopMicrophone(false).then(() => setMicMessage(msg.message || "Live STT unavailable"));
   }
+}
+
+function resetMicButton() {
+  $("micBtn").innerHTML = MIC_SVG + '<span class="mic-idle-label">Mic</span>';
+  $("micBtn").classList.remove("recording", "starting");
+  $("micBtn").setAttribute("aria-label", "Start microphone");
+  $("micBtn").setAttribute("aria-pressed", "false");
 }
 
 function markQuote(text, quote) {
@@ -167,7 +217,23 @@ function escapeHtml(s) {
   return String(s).replace(/[&<>'"]/g, (c) => ({"&":"&amp;","<":"&lt;",">":"&gt;","'":"&#39;",'"':"&quot;"}[c]));
 }
 
-async function reset() {
+function stopDemo() {
+  if (state.demoTimer) clearTimeout(state.demoTimer);
+  state.demoTimer = null;
+  state.demoRunning = false;
+  if (state.providerLabel) {
+    $("modeBadge").textContent = state.providerLabel;
+    $("modeBadge").dataset.mode = state.providerMode;
+  }
+  document.querySelectorAll("[data-demo]").forEach((button) => {
+    button.classList.remove("demo-playing");
+    const label = button.querySelector(".demo-label");
+    if (label) label.textContent = "Play demo";
+  });
+}
+
+async function reset(options = {}) {
+  if (!options.keepDemo) stopDemo();
   await stopMicrophone();
   if (state.ws?.readyState === WebSocket.OPEN) state.ws.send(JSON.stringify({ type: "reset" }));
   $("alert").dataset.state = "quiet";
@@ -176,6 +242,7 @@ async function reset() {
   $("feed").innerHTML = "";
   $("timeline").innerHTML = "";
   $("liveTranscript").textContent = "Waiting for speech…";
+  $("speakerSelect").value = "Speaker A";
   updateScore();
 }
 
@@ -207,6 +274,10 @@ async function startMicrophone() {
   mute.connect(context.destination);
 
   state.mic = {active: true, context, source, processor, stream, inputRate: context.sampleRate};
+  $("micBtn").classList.add("starting");
+  $("micBtn").innerHTML = MIC_SVG + '<span class="mic-starting-label">Starting…</span>';
+  $("micBtn").setAttribute("aria-label", "Microphone starting");
+  $("micBtn").setAttribute("aria-pressed", "true");
   state.ws.send(JSON.stringify({type:"audio_start", speaker, language: $("langSelect").value}));
   setMicMessage(`Starting live STT at ${context.sampleRate} Hz input…`);
 
@@ -250,17 +321,20 @@ function floatTo16BitPCM(buffer) {
   return result;
 }
 
-async function stopMicrophone() {
-  if (!state.mic.context && !state.mic.stream) return;
+async function stopMicrophone(notifyServer = true) {
+  if (!state.mic.context && !state.mic.stream) {
+    state.mic.active = false;
+    resetMicButton();
+    return;
+  }
   state.mic.active = false;
   try { state.mic.processor?.disconnect(); } catch (_) {}
   try { state.mic.source?.disconnect(); } catch (_) {}
   try { await state.mic.context?.close(); } catch (_) {}
   state.mic.stream?.getTracks().forEach(t => t.stop());
-  if (state.ws?.readyState === WebSocket.OPEN) state.ws.send(JSON.stringify({type:"audio_stop"}));
+  if (notifyServer && state.ws?.readyState === WebSocket.OPEN) state.ws.send(JSON.stringify({type:"audio_stop"}));
   state.mic = {active:false, context:null, source:null, processor:null, stream:null, inputRate:48000};
-  $("micBtn").innerHTML = MIC_SVG + "Mic";
-  $("micBtn").classList.remove("recording");
+  resetMicButton();
 }
 
 async function toggleMicrophone() {
@@ -271,6 +345,7 @@ async function toggleMicrophone() {
     try {
       await startMicrophone();
     } catch (err) {
+      await stopMicrophone();
       setMicMessage(`Microphone error: ${err.message}`);
     }
   }
@@ -278,35 +353,51 @@ async function toggleMicrophone() {
 
 // ---- Browser Speech Recognition fallback (no Deepgram key required) ----
 const demos = {
-  clean: ["The proposal has three parts, and each one can be evaluated independently."],
+  debate: [
+    {speaker: "Speaker A", text: "The city should test two evening bus routes because several neighborhoods have no service after eight."},
+    {speaker: "Speaker B", text: "A short pilot could show whether those routes help before the city commits to a permanent change."},
+    {speaker: "Speaker A", text: "You're not qualified to talk about this, so your argument is meaningless."},
+    {speaker: "Speaker B", text: "Either the city funds the pilot this year or evening riders will be left stranded."},
+    {speaker: "Speaker A", text: "So basically you want to ban every evening route in the city."},
+    {speaker: "Speaker B", text: "I suggested testing two routes, not ending evening service."},
+    {speaker: "Speaker A", text: "We can review the rider data before deciding whether to expand it."},
+  ],
+  clean: [{speaker: "Speaker A", text: "The proposal has three parts, and each one can be evaluated independently."}],
   ad_hominem: [
-    "Your proposal does not address the budget data.",
-    "You don't understand economics, so your argument is meaningless."
+    {speaker: "Speaker A", text: "Your proposal does not address the budget data."},
+    {speaker: "Speaker B", text: "You don't understand economics, so your argument is meaningless."}
   ],
   false_dilemma: [
-    "There are several ways to lower the cost.",
-    "Either we completely cancel the program or everything will fail."
+    {speaker: "Speaker A", text: "There are several ways to lower the cost."},
+    {speaker: "Speaker B", text: "Either we completely cancel the program or everything will fail."}
   ],
   straw_man: [
-    "I support regulating harmful content while keeping ordinary discussion open.",
-    "So you want to ban everything people say online."
-  ],
-  mixed: [
-    "Our plan has a measurable target and three implementation stages.",
-    "You're not qualified to talk about this, so your point can be ignored.",
-    "Either we adopt this exact plan or the whole project collapses.",
-    "So basically you want to ban every platform on the internet."
+    {speaker: "Speaker A", text: "I support regulating harmful content while keeping ordinary discussion open."},
+    {speaker: "Speaker B", text: "So you want to ban everything people say online."}
   ],
 };
 
-function runDemo(name) {
-  if (state.demoTimer) clearTimeout(state.demoTimer);
+async function runDemo(name, button) {
+  stopDemo();
+  await reset({keepDemo: true});
+  state.demoRunning = true;
+  $("modeBadge").textContent = "Deterministic scripted demo";
+  $("modeBadge").dataset.mode = "demo";
+  button?.classList.add("demo-playing");
+  const demoLabel = button?.querySelector(".demo-label");
+  if (demoLabel) demoLabel.textContent = "Playing demo…";
   const lines = demos[name] || [];
   let i = 0;
   const tick = () => {
-    if (i >= lines.length) return;
-    sendAnalyze(lines[i++]);
-    state.demoTimer = setTimeout(tick, 1700);
+    if (i >= lines.length) {
+      stopDemo();
+      return;
+    }
+    const line = lines[i++];
+    $("speakerSelect").value = line.speaker;
+    updateScore();
+    sendAnalyze(line.text, line.speaker, true);
+    state.demoTimer = setTimeout(tick, 2100);
   };
   tick();
 }
@@ -316,15 +407,33 @@ $("micBtn").onclick = toggleMicrophone;
 
 $("resetBtn").onclick = reset;
 $("speakerSelect").onchange = updateScore;
-document.querySelectorAll("[data-demo]").forEach(btn => btn.onclick = () => runDemo(btn.dataset.demo));
+document.querySelectorAll("[data-demo]").forEach(btn => btn.onclick = () => runDemo(btn.dataset.demo, btn));
+
+document.addEventListener("click", (event) => {
+  const button = event.target.closest("button");
+  if (!button) return;
+  const rect = button.getBoundingClientRect();
+  button.style.setProperty("--click-x", `${event.clientX ? event.clientX - rect.left : rect.width / 2}px`);
+  button.style.setProperty("--click-y", `${event.clientY ? event.clientY - rect.top : rect.height / 2}px`);
+  button.classList.remove("ignition-click");
+  void button.offsetWidth;
+  button.classList.add("ignition-click");
+  button.addEventListener("animationend", (animationEvent) => {
+    if (animationEvent.animationName === "ignition-ripple") button.classList.remove("ignition-click");
+  }, {once: true});
+});
 
 ["A", "B"].forEach((k) => {
   $("card-" + k).onclick = () => { $("speakerSelect").value = "Speaker " + k; updateScore(); };
 });
 fetch("/api/config").then((r) => r.json()).then((c) => {
   const live = c.provider === "GroqProvider";
-  $("modeBadge").textContent = live ? "Live AI classifier" : "Scripted demo mode";
-  $("modeBadge").dataset.mode = live ? "live" : "demo";
+  state.providerLabel = live ? "Live AI classifier" : "Scripted demo mode";
+  state.providerMode = live ? "live" : "demo";
+  if (!state.demoRunning) {
+    $("modeBadge").textContent = state.providerLabel;
+    $("modeBadge").dataset.mode = state.providerMode;
+  }
 }).catch(() => { $("modeBadge").textContent = "Mode unknown"; });
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
