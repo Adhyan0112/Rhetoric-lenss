@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 220" width="1280" height="220" role="img" aria-labelledby="t d">
+  <title id="t">Lite mode frame rate under stress</title>
+  <desc id="d">Stress test with no GPU and a 4x CPU slowdown: full design about 2.4 frames per second, lite mode 60 frames per second.</desc>
+  <style>
+    .mono{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
+    .sans{font-family:Manrope,'Segoe UI',ui-sans-serif,-apple-system,Helvetica,Arial,sans-serif}
+    .bar{transform-box:fill-box;transform-origin:left center;animation:grow 1.6s cubic-bezier(.2,.7,.2,1) both}
+    .b2{animation-delay:.5s}
+    .val{animation:fade .8s 1.5s both}.val2{animation-delay:2s}
+    @keyframes grow{from{transform:scaleX(0)}to{transform:scaleX(1)}}
+    @keyframes fade{from{opacity:0}to{opacity:1}}
+    @media (prefers-reduced-motion:reduce){*{animation:none!important}}
+  </style>
+  <rect width="1280" height="220" rx="18" fill="#090a0d"/>
+  <text class="mono" x="48" y="42" font-size="11" letter-spacing="2.6" fill="#a9edce">LITE MODE · FRAME RATE UNDER STRESS</text>
+
+  <text class="sans" x="48" y="96" font-size="15" font-weight="600" fill="#d8d7d0">Full design</text>
+  <rect x="200" y="80" width="880" height="22" rx="3" fill="#ffffff" fill-opacity=".05"/>
+  <rect class="bar" x="200" y="80" width="35" height="22" rx="3" fill="#f3b66e"/>
+  <text class="mono val" x="248" y="96" font-size="13" fill="#f3b66e">~2.4 fps</text>
+
+  <text class="sans" x="48" y="146" font-size="15" font-weight="600" fill="#d8d7d0">Lite mode</text>
+  <rect x="200" y="130" width="880" height="22" rx="3" fill="#ffffff" fill-opacity=".05"/>
+  <rect class="bar b2" x="200" y="130" width="880" height="22" rx="3" fill="#72f5c5"/>
+  <text class="mono val val2" x="1096" y="146" font-size="13" fill="#72f5c5">60 fps</text>
+
+  <text class="mono" x="48" y="196" font-size="10" letter-spacing="1.2" fill="#787882">Headless Chromium · no GPU · 4× CPU slowdown. A stand-in for a weak device, not a real phone.</text>
+</svg>

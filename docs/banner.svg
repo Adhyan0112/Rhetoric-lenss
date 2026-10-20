@@ -1,0 +1,68 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 400" width="1280" height="400" role="img" aria-labelledby="t d">
+  <title id="t">RhetoricLens: Hear the words. See the structure.</title>
+  <desc id="d">An animated argument trace passes through concentric analysis rings and one point flags as a fallacy.</desc>
+  <defs>
+    <radialGradient id="glow" cx="72%" cy="50%" r="55%"><stop offset="0" stop-color="#72f5c5" stop-opacity=".12"/><stop offset="1" stop-color="#72f5c5" stop-opacity="0"/></radialGradient>
+    <radialGradient id="pink" cx="50%" cy="50%" r="50%"><stop offset="0" stop-color="#f19db7" stop-opacity=".35"/><stop offset="1" stop-color="#f19db7" stop-opacity="0"/></radialGradient>
+    <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse"><path d="M40 0H0V40" fill="none" stroke="#c6e0d2" stroke-opacity=".06"/></pattern>
+    <filter id="soft" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="3" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+    <linearGradient id="fadeL" x1="0" x2="1"><stop offset="0" stop-color="#090a0d"/><stop offset="1" stop-color="#090a0d" stop-opacity="0"/></linearGradient>
+  </defs>
+  <style>
+    .mono{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
+    .sans{font-family:Manrope,'Segoe UI',ui-sans-serif,-apple-system,Helvetica,Arial,sans-serif}
+    .ring{fill:none;stroke:#d9e5df;stroke-opacity:.16;stroke-width:1}
+    .pulse{fill:none;stroke:#72f5c5;stroke-width:1.5;transform-box:fill-box;transform-origin:center;opacity:0;animation:pulse 4.8s ease-out infinite}
+    .p2{animation-delay:1.6s}.p3{animation-delay:3.2s}
+    .trace{fill:none;stroke:#72f5c5;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:1;stroke-dashoffset:0;filter:url(#soft);animation:draw 9s cubic-bezier(.65,0,.25,1) infinite}
+    .node{fill:#9bffda;animation:node 9s ease-in-out infinite}
+    .flag{animation:flag 9s ease-in-out infinite}
+    .flagwave{fill:none;stroke:#f19db7;stroke-width:1.5;transform-box:fill-box;transform-origin:center;animation:wave 9s ease-out infinite}
+    .dot{animation:blink 1.8s ease-in-out infinite}
+    .l1{animation:rise 1s .2s cubic-bezier(.2,.7,.2,1) both}
+    .l2{animation:rise 1s .45s cubic-bezier(.2,.7,.2,1) both}
+    .l3{animation:rise 1s .85s cubic-bezier(.2,.7,.2,1) both}
+    .l4{animation:rise 1s 1.25s cubic-bezier(.2,.7,.2,1) both}
+    .l5{animation:rise 1s 1.6s cubic-bezier(.2,.7,.2,1) both}
+    @keyframes pulse{0%{opacity:0;transform:scale(.25)}12%{opacity:.7}100%{opacity:0;transform:scale(1)}}
+    @keyframes draw{0%,6%{stroke-dashoffset:1;opacity:0}10%{opacity:1}52%,84%{stroke-dashoffset:0;opacity:1}94%,100%{stroke-dashoffset:-1;opacity:0}}
+    @keyframes node{0%,22%{opacity:0}34%,84%{opacity:.95}94%,100%{opacity:0}}
+    @keyframes flag{0%,50%{opacity:0;transform:translateY(6px)}58%,80%{opacity:1;transform:translateY(0)}90%,100%{opacity:0}}
+    @keyframes wave{0%,50%{opacity:0;transform:scale(.4)}56%{opacity:.9}74%,100%{opacity:0;transform:scale(3)}}
+    @keyframes blink{50%{opacity:.35}}
+    @keyframes rise{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+    @media (prefers-reduced-motion:reduce){*{animation:none!important}.pulse,.flagwave{opacity:0}}
+  </style>
+
+  <rect width="1280" height="400" rx="18" fill="#090a0d"/>
+  <rect width="1280" height="400" rx="18" fill="url(#grid)"/>
+  <rect width="1280" height="400" rx="18" fill="url(#glow)"/>
+
+  <!-- analysis rings -->
+  <g transform="translate(930 200)">
+    <circle class="ring" r="170"/><circle class="ring" r="135"/><circle class="ring" r="100"/><circle class="ring" r="66"/><circle class="ring" r="34"/>
+    <circle class="pulse" r="170"/><circle class="pulse p2" r="170"/><circle class="pulse p3" r="170"/>
+    <path d="M0 -190v14M0 176v14M-190 0h14M176 0h14" stroke="#d9e5df" stroke-opacity=".3"/>
+  </g>
+
+  <!-- argument trace -->
+  <path class="trace" pathLength="1" d="M610 214 H700 l26 -38 l30 78 l36 -108 l30 62 l30 -26 l34 0 l32 -80 l40 126 l34 -30 l32 46 l30 -66 l24 42 H1236"/>
+  <g class="node" filter="url(#soft)"><circle cx="726" cy="176" r="4.5"/><circle cx="756" cy="254" r="4.5"/><circle cx="822" cy="208" r="4.5"/><circle cx="992" cy="198" r="4.5"/><circle cx="1078" cy="220" r="4.5"/></g>
+
+  <!-- flagged moment -->
+  <g class="flag">
+    <circle cx="918" cy="102" r="30" fill="url(#pink)"/>
+    <circle cx="918" cy="102" r="6" fill="#f19db7"/>
+    <g transform="translate(948 52)"><rect width="170" height="30" rx="3" fill="#16111a" stroke="#f19db7" stroke-opacity=".6"/><text class="mono" x="14" y="19.5" font-size="11" letter-spacing="1.6" fill="#ffc0d0">FALLACY DETECTED  −8</text></g>
+    <path d="M923 98 L948 78" stroke="#f19db7" stroke-opacity=".5"/>
+  </g>
+  <circle class="flagwave" cx="918" cy="102" r="14"/>
+
+  <!-- copy -->
+  <rect x="0" y="0" width="610" height="400" rx="18" fill="url(#fadeL)" opacity=".85"/>
+  <g class="l1"><circle class="dot" cx="76" cy="96" r="4" fill="#72f5c5"/><text class="mono" x="92" y="100" font-size="12" letter-spacing="3" fill="#a9edce">REAL-TIME ARGUMENT INTELLIGENCE</text></g>
+  <text class="sans l2" x="70" y="186" font-size="74" font-weight="700" letter-spacing="-3.5" fill="#f1f0e9">Rhetoric<tspan fill="#a9edce">Lens</tspan></text>
+  <text class="sans l3" x="72" y="244" font-size="26" font-weight="500" letter-spacing="-.6" fill="#d8d7d0">Hear the words.</text>
+  <text class="sans l4" x="72" y="280" font-size="26" font-weight="500" letter-spacing="-.6" fill="#72f5c5">See the structure.</text>
+  <text class="mono l5" x="72" y="338" font-size="11" letter-spacing="2.4" fill="#787882">FASTAPI · WEBSOCKETS · DEEPGRAM · GROQ  ·  JAI 2026 · JIIT NOIDA</text>
+</svg>

@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 212 52" width="212" height="52" role="img" aria-label="Troubleshooting">
+  <title>Troubleshooting</title>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#15181e"/><stop offset="1" stop-color="#0c0e12"/></linearGradient>
+    <linearGradient id="sheen" x1="0" x2="1"><stop offset="0" stop-color="#72f5c5" stop-opacity="0"/><stop offset=".5" stop-color="#b8ffe6" stop-opacity=".28"/><stop offset="1" stop-color="#72f5c5" stop-opacity="0"/></linearGradient>
+    <linearGradient id="edge" x1="0" x2="1"><stop offset="0" stop-color="#72f5c5" stop-opacity="0"/><stop offset=".5" stop-color="#72f5c5"/><stop offset="1" stop-color="#f19db7" stop-opacity="0"/></linearGradient>
+    <clipPath id="c"><rect x="6" y="6" width="200" height="40" rx="9"/></clipPath>
+  </defs>
+  <style>
+    .mono{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
+    .sans{font-family:Manrope,'Segoe UI',ui-sans-serif,-apple-system,Helvetica,Arial,sans-serif}
+    .btn{animation:rise .8s 0.60s cubic-bezier(.2,.7,.2,1) both}
+    .lit{fill:#72f5c5;fill-opacity:0;stroke:#72f5c5;stroke-width:1.2;stroke-opacity:0;animation:lit 7.5s ease-in-out 2.25s infinite}
+    .sweep{animation:sweep 7.5s cubic-bezier(.45,0,.2,1) 2.25s infinite}
+    .edge{opacity:.0;animation:edge 7.5s ease-in-out 2.25s infinite}
+    .chev{fill:none;stroke:#a9edce;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;animation:nudge 2.2s ease-in-out 2.25s infinite}
+    @keyframes rise{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+    @keyframes sweep{0%{transform:translateX(0)}16%,100%{transform:translateX(320px)}}
+    @keyframes lit{0%{fill-opacity:0;stroke-opacity:0}5%{fill-opacity:.07;stroke-opacity:.85}16%{fill-opacity:.02;stroke-opacity:.4}24%,100%{fill-opacity:0;stroke-opacity:0}}
+    @keyframes edge{0%{opacity:0}6%{opacity:.95}22%,100%{opacity:0}}
+    @keyframes nudge{0%,100%{transform:translateX(0)}50%{transform:translateX(3px)}}
+    @media (prefers-reduced-motion:reduce){*{animation:none!important}.lit,.edge,.sweep{opacity:0}}
+  </style>
+
+  <g class="btn">
+    <rect x="6" y="6" width="200" height="40" rx="9" fill="url(#bg)" stroke="#eeece1" stroke-opacity=".14"/>
+    <g clip-path="url(#c)">
+      <path class="sweep" d="M-84 6 H-34 L-54 46 H-104 Z" fill="url(#sheen)"/>
+      <rect class="edge" x="6" y="44.4" width="200" height="1.6" fill="url(#edge)"/>
+    </g>
+    <rect class="lit" x="6" y="6" width="200" height="40" rx="9"/>
+    <text class="mono" x="28" y="29.6" font-size="10" letter-spacing="1.8" fill="#a9edce">06</text>
+    <text class="sans" x="56" y="31.0" font-size="14" font-weight="600" letter-spacing="-.2" fill="#f1f0e9">Troubleshooting</text>
+    <path class="chev" d="M180 22.0 l4.5 4 l-4.5 4"/>
+  </g>
+</svg>

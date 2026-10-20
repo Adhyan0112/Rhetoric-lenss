@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 28" width="1280" height="28" role="presentation" aria-hidden="true">
+  <defs>
+    <linearGradient id="line" x1="0" x2="1"><stop offset="0" stop-color="#a9edce" stop-opacity="0"/><stop offset=".5" stop-color="#a9edce" stop-opacity=".28"/><stop offset="1" stop-color="#a9edce" stop-opacity="0"/></linearGradient>
+    <linearGradient id="spark" x1="0" x2="1"><stop offset="0" stop-color="#72f5c5" stop-opacity="0"/><stop offset=".7" stop-color="#72f5c5"/><stop offset="1" stop-color="#f19db7"/></linearGradient>
+  </defs>
+  <style>
+    .spark{animation:run 5s cubic-bezier(.45,0,.2,1) infinite}
+    .beat{animation:beat 5s ease-in-out infinite;transform-box:fill-box;transform-origin:center}
+    @keyframes run{0%{transform:translateX(-200px);opacity:0}8%{opacity:1}92%{opacity:1}100%{transform:translateX(1320px);opacity:0}}
+    @keyframes beat{0%,100%{opacity:.45;transform:scale(1)}50%{opacity:1;transform:scale(1.5)}}
+    @media (prefers-reduced-motion:reduce){*{animation:none!important}.spark{opacity:0}}
+  </style>
+  <rect y="13.5" width="1280" height="1" fill="url(#line)"/>
+  <rect class="spark" x="0" y="12.5" width="180" height="3" rx="1.5" fill="url(#spark)"/>
+  <circle class="beat" cx="640" cy="14" r="3" fill="#72f5c5"/>
+</svg>

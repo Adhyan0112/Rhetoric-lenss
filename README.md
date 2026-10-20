@@ -1,16 +1,22 @@
 <div align="center">
 
-<img src="docs/banner.svg" alt="RhetoricLens: Hear the words. See the structure." width="100%" />
+<p align="center">
+  <img src="docs/banner.svg" alt="RhetoricLens: Hear the words. See the structure." width="100%" />
+</p>
 
-<br />
+<p align="center">
+  <img src="docs/stack.svg" alt="Built with FastAPI, WebSockets, Deepgram, Groq and plain HTML, CSS and JavaScript" />
+</p>
 
-![FastAPI](https://img.shields.io/badge/backend-FastAPI-72f5c5?style=flat-square&labelColor=090a0d)
-![WebSockets](https://img.shields.io/badge/live-WebSockets-a9edce?style=flat-square&labelColor=090a0d)
-![Speech](https://img.shields.io/badge/speech-Deepgram-9685ff?style=flat-square&labelColor=090a0d)
-![Classifier](https://img.shields.io/badge/classifier-Groq-f19db7?style=flat-square&labelColor=090a0d)
-![Frontend](https://img.shields.io/badge/frontend-plain%20HTML%2FCSS%2FJS-f3b66e?style=flat-square&labelColor=090a0d)
-
-**[Overview](#overview)** · **[Quick start](#quick-start)** · **[How it works](#how-it-works)** · **[Lite mode](#lite-mode-for-low-end-devices)** · **[What changed](#what-changed)** · **[Troubleshooting](#troubleshooting)**
+<p align="center">
+  <a href="#overview"><img src="docs/btn-overview.svg" alt="Overview" /></a>
+  <a href="#quick-start"><img src="docs/btn-quick-start.svg" alt="Quick start" /></a>
+  <a href="#how-it-works"><img src="docs/btn-how-it-works.svg" alt="How it works" /></a>
+  <br />
+  <a href="#lite-mode-for-low-end-devices"><img src="docs/btn-lite.svg" alt="Lite mode" /></a>
+  <a href="#what-changed"><img src="docs/btn-changed.svg" alt="What changed" /></a>
+  <a href="#troubleshooting"><img src="docs/btn-trouble.svg" alt="Troubleshooting" /></a>
+</p>
 
 </div>
 
